@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: interview-service
+  config:
+    import: optional:configserver:http://localhost:8888  # Fallback to local if Config Server is down

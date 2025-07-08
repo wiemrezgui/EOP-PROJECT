@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: auth-service
+  config:
+    import: optional:configserver:http://localhost:8888  # Fallback to local if Config Server is down
+
+# Local development overrides
+server:
+  port: 8081  # Only needed if you want a specific port locally

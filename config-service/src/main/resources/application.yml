@@ -1,0 +1,22 @@
+server:
+  port: 8888
+
+spring:
+  cloud:
+    config:
+      server:
+        git:
+          uri:  git@github.com:wiemrezgui/EOP-config.git
+          search-paths: '{application}'  # Dynamically finds {service-name}.yml
+          clone-on-start: true           # Ensures latest configs on startup
+          username: wiemrezgui
+          password: Wiem_2003
+          ignore-local-ssh-settings: true
+          private-key: |
+            -----BEGIN OPENSSH PRIVATE KEY-----
+            b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
+            QyNTUxOQAAACDzvXh1jv9DzuU6BICcoZYXZvrJf7220sB/DHEX+6q/aAAAAKAqSEqnKkhK
+            pwAAAAtzc2gtZWQyNTUxOQAAACDzvXh1jv9DzuU6BICcoZYXZvrJf7220sB/DHEX+6q/aA
+            AAAEAOQTqy9AAUuYRgag1wxJdHn2fA2HVtGRLgd9MEicTdsvO9eHWO/0PO5ToEgJyhlhdm
+            +sl/vbbSwH8McRf7qr9oAAAAF3dpZW1yZXpndWkwMTJAZ21haWwuY29tAQIDBAUG
+            -----END OPENSSH PRIVATE KEY-----
