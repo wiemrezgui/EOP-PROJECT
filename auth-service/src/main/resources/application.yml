@@ -3,7 +3,10 @@ spring:
     name: auth-service
   config:
     import: optional:configserver:http://localhost:8888  # Fallback to local if Config Server is down
-
+jwt:
+  secret-key: PtcDeo1G1DBOzrMS9zkiPc4FvOY7hVT4SY8nOozWGGiUhP/+qykT4ZnA0IWPe8kb
+  expiration : 172800000
+  issuer: auth
 # Local development overrides
 server:
-  port: 8081  # Only needed if you want a specific port locally
+  port: 8081
