@@ -1,6 +1,6 @@
 package com.EOP.auth_service.jwt;
 
-import com.EOP.auth_service.exceptions.InvalidCredentialsException;
+import com.EOP.auth_service.exceptions.InvalidDataException;
 import com.EOP.auth_service.exceptions.UserNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -24,7 +24,7 @@ public class JwtAuthEntryPoint implements AuthenticationEntryPoint {
             response.setStatus(HttpStatus.NOT_FOUND.value());
             response.getWriter().write("{ \"error\": \"User not found\" }");
         }
-        else if (authException instanceof InvalidCredentialsException) {
+        else if (authException instanceof InvalidDataException) {
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
             response.getWriter().write("{ \"error\": \"Invalid credentials\" }");
         }
