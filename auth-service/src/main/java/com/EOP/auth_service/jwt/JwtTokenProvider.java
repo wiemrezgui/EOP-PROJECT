@@ -1,7 +1,9 @@
 package com.EOP.auth_service.jwt;
 
+import com.EOP.auth_service.serviceImpl.TokenBlacklistService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,6 +28,8 @@ public class JwtTokenProvider {
     @Value("${jwt.issuer}")
     private String issuer;
 
+    private TokenBlacklistService tokenBlacklistService;
+
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
@@ -49,7 +53,27 @@ public class JwtTokenProvider {
                 .signWith(getSignInKey(), Jwts.SIG.HS256)
                 .compact();
     }
+    public String generateRefreshToken(String username) {
+        long refreshExpiration = 604800000;
+        return Jwts.builder()
+                .subject(username)
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + refreshExpiration))
+                .signWith(getSignInKey(), Jwts.SIG.HS256)
+                .compact();
+    }
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parser()
+                    .verifyWith(getSignInKey())
+                    .build()
+                    .parseSignedClaims(token);
 
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
         return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
@@ -70,7 +94,6 @@ public class JwtTokenProvider {
                 .parseSignedClaims(token)
                 .getPayload();
     }
-
     private SecretKey getSignInKey() {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(keyBytes);
