@@ -17,7 +17,7 @@
         <module>interview-service</module>
         <module>contract-service</module>
         <module>jobs-service</module>
-        <module>notification-service</module>
+        <module>events-service</module>
     </modules>
 
     <properties>
@@ -26,7 +26,6 @@
 
     <dependencyManagement>
         <dependencies>
-            <!-- Only add dependencies that both modules share -->
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>

@@ -6,6 +6,7 @@
     <file url="file://$PROJECT_DIR$/config-service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/contract-service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/discovery-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/events-service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/interview-service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/jobs-service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/notification-service/src/main/java" charset="UTF-8" />

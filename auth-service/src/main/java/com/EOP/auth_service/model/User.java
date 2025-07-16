@@ -27,4 +27,6 @@ public class User {
     private String password;
     private Role role;
     private Department department;
+    @Column(nullable = false)
+    private boolean verified;
 }

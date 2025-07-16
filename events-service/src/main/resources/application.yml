@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: events-service
+  config:
+    import: optional:configserver:http://localhost:8888  # Fallback to local if Config Server is down
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: wiem.rezgui@etudiant-isi.utm.tn
+    password: rjdy bxuu iaya iqcs
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
