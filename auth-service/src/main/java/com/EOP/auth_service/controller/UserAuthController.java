@@ -35,4 +35,8 @@ public class UserAuthController {
     ResponseEntity<String> addUser(@RequestBody UserDTO data){
         return this.userAuthService.addUser(data);
     }
+    @GetMapping("/verify-account/{email}")
+    ResponseEntity<String> verifyAccount(@PathVariable String email){
+        return this.userAuthService.verifyAccount(email);
+    }
 }

@@ -11,3 +11,4 @@ spring:
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
+      from: noreply@eop.com

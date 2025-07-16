@@ -88,7 +88,7 @@ public class UserAuthServiceImpl {
         newUser.setPassword(this.passwordEncoder.encode(generatedPassword));
         newUser.setDepartment(data.getDepartment());
         newUser.setRole(Role.EMPLOYER);
-        newUser.setUsername(data.getEmail());
+        newUser.setUsername(data.getUsername());
         newUser.setVerified(false);
         User addedUser = this.userRepository.save(newUser);
         String token = jwtTokenProvider.generateToken(
@@ -98,6 +98,7 @@ public class UserAuthServiceImpl {
                         Collections.emptyList()
                 )
         );
+
         kafkaTemplate.send(
                 "account-created",
                 new AccountCreatedEvent(

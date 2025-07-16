@@ -1,29 +1,69 @@
 package com.EOP.events_service.service;
 
 import events.AccountCreatedEvent;
+import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.messaging.MessagingException;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StreamUtils;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @Service
 public class EventService {
     private final JavaMailSender mailSender;
+    private final static String emailVerificationPath = "templates/email-verification.html";
+
+    @Value("${spring.mail.properties.from}")
+    private String noreplyEmail;
 
     @KafkaListener(topics = "account-created")
-    public void handleAccountCreated(AccountCreatedEvent event) {
-        System.out.println("Received account created event");
-        SimpleMailMessage email = new SimpleMailMessage();
-        email.setTo(event.getEmail());
-        email.setSubject("Verify Your Account");
-        email.setText(String.format(
-                "Hi %s, click to verify: http://localhost:8080/verify?token=%s",
-                event.getUsername(),
-                event.getPassword()
-        ));
-        this.mailSender.send(email);
+    public void handleAccountCreated(AccountCreatedEvent event) throws MessagingException, IOException, jakarta.mail.MessagingException {
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+        // Base configuration
+        helper.setFrom(noreplyEmail);
+        helper.setTo(event.getEmail());
+        helper.setSubject("Your Account Credentials");
+
+        // Load and process template
+        String htmlContent = loadTemplate(emailVerificationPath);
+        Map<String, String> variables = new HashMap<>();
+        variables.put("username", event.getUsername());
+        variables.put("email", event.getEmail());
+        variables.put("password", event.getPassword());
+        variables.put("verificationLink",
+                "https://localhost:8080/verify-account?email=" + event.getEmail());
+
+        String finalContent = replaceVariables(htmlContent, variables);
+        helper.setText(finalContent, true);
+
+        ClassPathResource logo = new ClassPathResource("images/EOP-logo.png");
+        helper.addInline("logo", logo);
+
+        mailSender.send(message);
+    }
+
+    private String loadTemplate(String path) throws IOException {
+        ClassPathResource resource = new ClassPathResource(path);
+        return StreamUtils.copyToString(resource.getInputStream(), StandardCharsets.UTF_8);
+    }
+
+    private String replaceVariables(String template, Map<String, String> variables) {
+        String result = template;
+        for (Map.Entry<String, String> entry : variables.entrySet()) {
+            result = result.replace("${" + entry.getKey() + "}", entry.getValue());
+        }
+        return result;
     }
 }
 
