@@ -14,10 +14,10 @@ spring:
           filters:
             - StripPrefix=1
 
-        - id: candidate-service
-          uri: lb://candidate-service
+        - id: job-service
+          uri: lb://jobs-service
           predicates:
-            - Path=/api/candidates/**
+            - Path=/api/jobs/**
           filters:
             - StripPrefix=1
 

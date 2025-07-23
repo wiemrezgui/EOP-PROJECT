@@ -62,6 +62,26 @@
 			<scope>runtime</scope>
 		</dependency>
 
+		<!-- Redis -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-redis</artifactId>
+		</dependency>
+
+		<!-- Swagger -->
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>2.2.0</version>
+		</dependency>
+
+		<!-- For PDF bytea storage -->
+		<dependency>
+			<groupId>org.hibernate.orm</groupId>
+			<artifactId>hibernate-core</artifactId>
+			<version>6.4.4.Final</version> <!-- Hibernate 6.x version -->
+		</dependency>
+
 		<!-- Service Discovery -->
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
@@ -83,7 +103,13 @@
             <artifactId>spring-boot-test</artifactId>
             <scope>test</scope>
         </dependency>
-    </dependencies>
+
+		<dependency>
+			<groupId>com.vladmihalcea</groupId>
+			<artifactId>hibernate-types-60</artifactId>
+			<version>2.21.1</version>
+		</dependency>
+	</dependencies>
 
 	<build>
 		<plugins>

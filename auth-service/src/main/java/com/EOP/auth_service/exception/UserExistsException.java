@@ -1,4 +1,4 @@
-package com.EOP.auth_service.exceptions;
+package com.EOP.auth_service.exception;
 
 import org.springframework.security.core.AuthenticationException;
 

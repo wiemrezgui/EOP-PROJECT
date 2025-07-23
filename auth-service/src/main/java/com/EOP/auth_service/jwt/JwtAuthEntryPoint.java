@@ -1,7 +1,7 @@
 package com.EOP.auth_service.jwt;
 
-import com.EOP.auth_service.exceptions.InvalidDataException;
-import com.EOP.auth_service.exceptions.UserNotFoundException;
+import com.EOP.auth_service.exception.InvalidDataException;
+import com.EOP.auth_service.exception.UserNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;

@@ -2,10 +2,10 @@ package com.EOP.auth_service.service;
 
 import com.EOP.auth_service.entity.LoginRequestedData;
 import com.EOP.auth_service.entity.UserDTO;
-import com.EOP.auth_service.exceptions.InvalidDataException;
-import com.EOP.auth_service.exceptions.InvalidTokenException;
-import com.EOP.auth_service.exceptions.UserExistsException;
-import com.EOP.auth_service.exceptions.UserNotFoundException;
+import com.EOP.auth_service.exception.InvalidDataException;
+import com.EOP.auth_service.exception.InvalidTokenException;
+import com.EOP.auth_service.exception.UserExistsException;
+import com.EOP.auth_service.exception.UserNotFoundException;
 import com.EOP.auth_service.jwt.JwtTokenProvider;
 import com.EOP.auth_service.model.Role;
 import com.EOP.auth_service.model.User;

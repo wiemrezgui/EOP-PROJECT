@@ -1,6 +1,6 @@
 package com.EOP.auth_service.service;
 
-import com.EOP.auth_service.exceptions.UserNotFoundException;
+import com.EOP.auth_service.exception.UserNotFoundException;
 import com.EOP.auth_service.repository.UserAuthRepository;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
