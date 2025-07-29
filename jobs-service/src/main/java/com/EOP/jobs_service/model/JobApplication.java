@@ -21,4 +21,5 @@ public class JobApplication {
     private Job job;
 
     private String stage;
+
 }

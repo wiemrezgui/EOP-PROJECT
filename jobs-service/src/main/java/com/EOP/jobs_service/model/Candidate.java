@@ -16,6 +16,7 @@ public class Candidate {
     private Long id;
 
     private String email;
+
     private LocalDate appliedDate;
 
     @Enumerated(EnumType.STRING)
