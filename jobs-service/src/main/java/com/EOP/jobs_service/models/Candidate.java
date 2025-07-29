@@ -7,7 +7,7 @@ import java.time.LocalDate;
 import java.util.*;
 
 @Entity
-@Table(name = "candidates")
+@Table(name = "candidate")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
 public class Candidate {
 
@@ -22,7 +22,6 @@ public class Candidate {
     @Enumerated(EnumType.STRING)
     private CandidateStatus status;
 
-    @Lob
     @Column(name = "resume")
     private byte[] resume;
 

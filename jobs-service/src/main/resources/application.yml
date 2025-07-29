@@ -3,5 +3,28 @@ spring:
     name: jobs-service
   config:
     import: optional:configserver:http://localhost:8888  # Fallback to local if Config Server is down
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password:
+      database: 0
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 1
+          max-wait: -1ms
+    cache:
+      type: redis
+      redis:
+        time-to-live: 30m
+        key-prefix: "jobportal:"
+        cache-null-values: false
 server:
   port: 8082
+springdoc:
+  swagger-ui:
+    path: /api-docs
+  api-docs:
+    path: /api-docs-json

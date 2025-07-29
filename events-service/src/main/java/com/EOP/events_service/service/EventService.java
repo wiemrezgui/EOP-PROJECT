@@ -65,11 +65,10 @@ public class EventService {
         helper.setSubject("Application Confirmation: " + event.getJobTitle());
 
         // Load and process template
-        String htmlContent = loadTemplate("templates/job-application-email.html");
+        String htmlContent = loadTemplate("templates/job-application.html");
         Map<String, String> variables = new HashMap<>();
         variables.put("jobTitle", event.getJobTitle());
         variables.put("applicationDate", event.getApplicationDate().format(DateTimeFormatter.ofPattern("MMMM dd, yyyy")));
-
         String finalContent = replaceVariables(htmlContent, variables);
         helper.setText(finalContent, true);
 

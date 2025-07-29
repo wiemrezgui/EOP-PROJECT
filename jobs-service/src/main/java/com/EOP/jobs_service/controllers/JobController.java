@@ -1,5 +1,6 @@
 package com.EOP.jobs_service.controllers;
 
+import com.EOP.jobs_service.DTOs.JobDTO;
 import com.EOP.jobs_service.models.Job;
 import com.EOP.jobs_service.models.JobStatus;
 import com.EOP.jobs_service.services.JobService;
@@ -24,7 +25,7 @@ public class JobController {
     @Operation(summary = "Create a new job")
     @PostMapping
     public ResponseEntity<Job> createJob(
-            @RequestBody @Valid Job job) {
+            @RequestBody JobDTO job) {
         return ResponseEntity.ok(jobService.createJob(job));
     }
 
@@ -54,11 +55,9 @@ public class JobController {
     public ResponseEntity<Job> updateJob(
             @Parameter(description = "Job ID", example = "1")
             @PathVariable Long id,
-
-            @RequestBody @Valid Job job) {
-
-        job.setId(id);
-        return ResponseEntity.ok(jobService.updateJob(job));
+            @RequestBody @Valid JobDTO jobDTO) {
+        System.out.println("id "+id);
+        return ResponseEntity.ok(jobService.updateJob(id, jobDTO));
     }
 
     @Operation(summary = "Delete job")

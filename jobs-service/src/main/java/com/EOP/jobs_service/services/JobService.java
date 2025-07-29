@@ -1,5 +1,6 @@
 package com.EOP.jobs_service.services;
 
+import com.EOP.jobs_service.DTOs.JobDTO;
 import com.EOP.jobs_service.exceptions.JobNotFoundException;
 import com.EOP.jobs_service.models.Job;
 import com.EOP.jobs_service.repositories.JobRepository;
@@ -9,11 +10,14 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
+
 import com.EOP.jobs_service.models.JobStatus;
 
 @Service
@@ -23,20 +27,38 @@ public class JobService {
     private final RedisTemplate<String, Object> redisTemplate;
 
     // Cache keys
-    private static final String ALL_JOBS_CACHE = "all_jobs";
+    private static final String JOBS_LIST_CACHE = "jobs-list";
+    private static final String JOBS_COUNT_CACHE = "jobs-count";
     private static final String JOB_BY_ID_CACHE = "job_";
 
-    @CacheEvict(value = ALL_JOBS_CACHE, allEntries = true)
-    public Job createJob(Job job) {
-        job.setPostedDate(LocalDate.now());
-        job.setStatus(JobStatus.PUBLISHED);
-        return jobRepository.save(job);
+    @CacheEvict(value = {JOBS_LIST_CACHE, JOBS_COUNT_CACHE}, allEntries = true)
+    public Job createJob(JobDTO jobDTO) {
+        Job newJob = new Job();
+        newJob.setTitle(jobDTO.getTitle());
+        newJob.setDetails(jobDTO.getDetails());
+        newJob.setPostedDate(LocalDate.now());
+        newJob.setStatus(JobStatus.PUBLISHED);
+        return jobRepository.save(newJob);
     }
 
-    @Cacheable(value = ALL_JOBS_CACHE, key = "#pageable.pageNumber")
-    public Page<Job> getAllJobs(Pageable pageable) {
-        return jobRepository.findAllJobs(pageable);
+    @Cacheable(value = JOBS_LIST_CACHE, key = "'page:' + #pageable.pageNumber + ':size:' + #pageable.pageSize")
+    public List<Job> getJobsList(Pageable pageable) {
+        Page<Job> page = jobRepository.findAllJobs(pageable);
+        return page.getContent();
     }
+
+    // Cache the total count separately
+    @Cacheable(value = JOBS_COUNT_CACHE, key = "'total'")
+    public long getTotalJobsCount() {
+        return jobRepository.count();
+    }
+
+    public Page<Job> getAllJobs(Pageable pageable) {
+        List<Job> jobs = getJobsList(pageable);
+        long totalCount = getTotalJobsCount();
+        return new PageImpl<>(jobs, pageable, totalCount);
+    }
+
 
     @Cacheable(value = JOB_BY_ID_CACHE, key = "#id")
     public Job getJobById(Long id) {
@@ -44,25 +66,24 @@ public class JobService {
                 .orElseThrow(() -> new JobNotFoundException("Job not found with id: " + id));
     }
 
-    @CachePut(value = JOB_BY_ID_CACHE, key = "#job.id")
-    @CacheEvict(value = ALL_JOBS_CACHE, allEntries = true)
-    public Job updateJob(Job job) {
-        if (!jobRepository.existsById(job.getId())) {
-            throw new JobNotFoundException("Job not found with id: " + job.getId());
-        }
-        return jobRepository.save(job);
+    @CachePut(value = JOB_BY_ID_CACHE, key = "#id")
+    @CacheEvict(value = {JOBS_LIST_CACHE,JOB_BY_ID_CACHE}, allEntries = true)
+    public Job updateJob(Long id, JobDTO jobDTO) {
+        System.out.println("id in service"+id);
+        Job existingJob = jobRepository.findById(id)
+                .orElseThrow(() -> new JobNotFoundException("Job not found with id: " + id));
+        existingJob.setTitle(jobDTO.getTitle());
+        existingJob.setDetails(jobDTO.getDetails());
+        return jobRepository.save(existingJob);
     }
 
-    @Caching(evict = {
-            @CacheEvict(value = JOB_BY_ID_CACHE, key = "#id"),
-            @CacheEvict(value = ALL_JOBS_CACHE, allEntries = true)
-    })
+    @CacheEvict(value = {JOBS_LIST_CACHE, JOBS_COUNT_CACHE, JOB_BY_ID_CACHE}, allEntries = true)
     public void deleteJob(Long id) {
         jobRepository.deleteById(id);
     }
 
     @CachePut(value = JOB_BY_ID_CACHE, key = "#id")
-    @CacheEvict(value = ALL_JOBS_CACHE, allEntries = true)
+    @CacheEvict(value = {JOBS_LIST_CACHE, JOB_BY_ID_CACHE}, allEntries = true)
     public Job updateJobStatus(Long id, JobStatus newStatus) {
         Job job = getJobById(id);
         job.setStatus(newStatus);

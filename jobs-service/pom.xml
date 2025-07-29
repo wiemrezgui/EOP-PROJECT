@@ -10,9 +10,9 @@
 	</parent>
 
 	<groupId>com.EOP</groupId>
-	<artifactId>candidate-service</artifactId>
+	<artifactId>jobs-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>candidate-service</name>
+	<name>jobs-service</name>
 
 	<properties>
 		<java.version>21</java.version>
@@ -66,6 +66,12 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-redis</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.fasterxml.jackson.datatype</groupId>
+			<artifactId>jackson-datatype-jsr310</artifactId>
+			<version>2.15.4</version>
 		</dependency>
 
 		<!-- Swagger -->
