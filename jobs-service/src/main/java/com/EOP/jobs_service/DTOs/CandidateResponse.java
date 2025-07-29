@@ -1,6 +1,6 @@
-package com.EOP.jobs_service.DTO;
+package com.EOP.jobs_service.DTOs;
 
-import com.EOP.jobs_service.model.Candidate;
+import com.EOP.jobs_service.models.Candidate;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 

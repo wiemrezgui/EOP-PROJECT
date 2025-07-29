@@ -1,7 +1,7 @@
 package com.EOP.jobs_service.services;
 
-import com.EOP.jobs_service.exception.JobNotFoundException;
-import com.EOP.jobs_service.model.Job;
+import com.EOP.jobs_service.exceptions.JobNotFoundException;
+import com.EOP.jobs_service.models.Job;
 import com.EOP.jobs_service.repositories.JobRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -11,11 +11,10 @@ import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import com.EOP.jobs_service.model.JobStatus;
+import com.EOP.jobs_service.models.JobStatus;
 
 @Service
 @RequiredArgsConstructor

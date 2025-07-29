@@ -1,6 +1,7 @@
 package com.EOP.events_service.service;
 
 import events.AccountCreatedEvent;
+import events.JobApplicationEvent;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +15,7 @@ import org.springframework.util.StreamUtils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -52,7 +54,31 @@ public class EventService {
 
         mailSender.send(message);
     }
+    @KafkaListener(topics = "job-application")
+    public void handleJobApplication(JobApplicationEvent event) throws MessagingException, IOException, jakarta.mail.MessagingException {
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
+        // Base configuration
+        helper.setFrom(noreplyEmail);
+        helper.setTo(event.getCandidateEmail());
+        helper.setSubject("Application Confirmation: " + event.getJobTitle());
+
+        // Load and process template
+        String htmlContent = loadTemplate("templates/job-application-email.html");
+        Map<String, String> variables = new HashMap<>();
+        variables.put("jobTitle", event.getJobTitle());
+        variables.put("applicationDate", event.getApplicationDate().format(DateTimeFormatter.ofPattern("MMMM dd, yyyy")));
+
+        String finalContent = replaceVariables(htmlContent, variables);
+        helper.setText(finalContent, true);
+
+        // Add logo
+        ClassPathResource logo = new ClassPathResource("images/EOP-logo.png");
+        helper.addInline("logo", logo);
+
+        mailSender.send(message);
+    }
     private String loadTemplate(String path) throws IOException {
         ClassPathResource resource = new ClassPathResource(path);
         return StreamUtils.copyToString(resource.getInputStream(), StandardCharsets.UTF_8);

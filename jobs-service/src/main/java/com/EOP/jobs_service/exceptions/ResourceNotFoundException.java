@@ -1,4 +1,4 @@
-package com.EOP.jobs_service.exception;
+package com.EOP.jobs_service.exceptions;
 
 public class ResourceNotFoundException extends RuntimeException {
     public ResourceNotFoundException(String message) {

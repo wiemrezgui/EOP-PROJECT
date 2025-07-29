@@ -1,16 +1,18 @@
 package com.EOP.jobs_service.services;
 
-import com.EOP.jobs_service.DTO.CandidateApplicationDto;
-import com.EOP.jobs_service.exception.AppliedJobException;
-import com.EOP.jobs_service.exception.CandidateNotFoundException;
-import com.EOP.jobs_service.exception.ResourceNotFoundException;
-import com.EOP.jobs_service.model.Candidate;
-import com.EOP.jobs_service.model.CandidateStatus;
-import com.EOP.jobs_service.model.Job;
-import com.EOP.jobs_service.model.JobApplication;
+import com.EOP.jobs_service.DTOs.CandidateApplicationDto;
+import com.EOP.jobs_service.exceptions.AppliedJobException;
+import com.EOP.jobs_service.exceptions.CandidateNotFoundException;
+import com.EOP.jobs_service.exceptions.JobNotFoundException;
+import com.EOP.jobs_service.exceptions.ResourceNotFoundException;
+import com.EOP.jobs_service.models.Candidate;
+import com.EOP.jobs_service.models.CandidateStatus;
+import com.EOP.jobs_service.models.Job;
+import com.EOP.jobs_service.models.JobApplication;
 import com.EOP.jobs_service.repositories.CandidateRepository;
 import com.EOP.jobs_service.repositories.JobApplicationRepository;
 import com.EOP.jobs_service.repositories.JobRepository;
+import events.JobApplicationEvent;
 import org.springframework.core.io.Resource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +22,7 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -33,7 +36,7 @@ public class CandidateService {
     private final JobRepository jobRepository;
     private final JobApplicationRepository jobApplicationRepository;
     private final RedisTemplate<String, Object> redisTemplate;
-
+    private final KafkaTemplate<String, JobApplicationEvent> kafkaTemplate;
     // Cache keys
     private static final String ALL_CANDIDATES_CACHE = "all_candidates";
     private static final String CANDIDATE_BY_ID_CACHE = "candidate_";
@@ -67,10 +70,26 @@ public class CandidateService {
         Candidate savedCandidate = candidateRepository.save(candidate);
         createJobApplication(savedCandidate, applicationDto.getJobId());
         cacheCandidate(savedCandidate);
-
+        sendJobApplicationEvent(savedCandidate, applicationDto.getJobId());
         return savedCandidate;
     }
+    private void sendJobApplicationEvent(Candidate candidate, Long jobId) {
+        try {
+            Job job = jobRepository.findById(jobId)
+                    .orElseThrow(() -> new JobNotFoundException("Job not found"));
 
+            JobApplicationEvent event = new JobApplicationEvent(
+                    candidate.getEmail(),
+                    job.getId(),
+                    job.getTitle(),
+                    LocalDate.now()
+            );
+
+            kafkaTemplate.send("job-application", event);
+        } catch (Exception e) {
+            log.error("Error creating job application event", e);
+        }
+    }
     @Cacheable(value = ALL_CANDIDATES_CACHE, key = "#pageable.pageNumber")
     public Page<Candidate> getAllCandidates(Pageable pageable) {
         log.info("Fetching candidates from database (page {})", pageable.getPageNumber());

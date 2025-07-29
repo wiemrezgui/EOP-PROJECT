@@ -1,7 +1,7 @@
-package com.EOP.jobs_service.controller;
+package com.EOP.jobs_service.controllers;
 
-import com.EOP.jobs_service.model.Job;
-import com.EOP.jobs_service.model.JobStatus;
+import com.EOP.jobs_service.models.Job;
+import com.EOP.jobs_service.models.JobStatus;
 import com.EOP.jobs_service.services.JobService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

@@ -1,4 +1,4 @@
-package com.EOP.jobs_service.model;
+package com.EOP.jobs_service.models;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;

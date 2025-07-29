@@ -1,6 +1,6 @@
 package com.EOP.jobs_service.repositories;
 
-import com.EOP.jobs_service.model.JobApplication;
+import com.EOP.jobs_service.models.JobApplication;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

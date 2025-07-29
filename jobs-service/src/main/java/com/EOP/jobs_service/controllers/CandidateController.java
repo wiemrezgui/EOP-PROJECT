@@ -1,9 +1,9 @@
-package com.EOP.jobs_service.controller;
+package com.EOP.jobs_service.controllers;
 
-import com.EOP.jobs_service.DTO.CandidateApplicationDto;
-import com.EOP.jobs_service.DTO.CandidateApplicationRequest;
-import com.EOP.jobs_service.DTO.CandidateResponse;
-import com.EOP.jobs_service.model.Candidate;
+import com.EOP.jobs_service.DTOs.CandidateApplicationDto;
+import com.EOP.jobs_service.DTOs.CandidateApplicationRequest;
+import com.EOP.jobs_service.DTOs.CandidateResponse;
+import com.EOP.jobs_service.models.Candidate;
 import com.EOP.jobs_service.services.CandidateService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;

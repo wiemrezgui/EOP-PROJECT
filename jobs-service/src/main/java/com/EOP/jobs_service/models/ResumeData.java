@@ -1,4 +1,4 @@
-package com.EOP.jobs_service.model;
+package com.EOP.jobs_service.models;
 
 import lombok.Getter;
 import lombok.Setter;

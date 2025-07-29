@@ -1,4 +1,4 @@
-package com.EOP.jobs_service.controller;
+package com.EOP.jobs_service.controllers;
 
 public class JobApplicationController {
 }

@@ -1,7 +1,7 @@
 package com.EOP.jobs_service.repositories;
 
-import com.EOP.jobs_service.model.Candidate;
-import com.EOP.jobs_service.model.CandidateStatus;
+import com.EOP.jobs_service.models.Candidate;
+import com.EOP.jobs_service.models.CandidateStatus;
 import jakarta.validation.constraints.Email;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

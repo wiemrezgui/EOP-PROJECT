@@ -1,4 +1,4 @@
-package com.EOP.jobs_service.model;
+package com.EOP.jobs_service.models;
 
 import com.vladmihalcea.hibernate.type.json.*;
 import jakarta.persistence.*;
