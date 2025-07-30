@@ -1,6 +1,7 @@
 package com.EOP.jobs_service.models;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
@@ -36,7 +37,8 @@ public class Job {
     @Column(columnDefinition = "jsonb")
     private JobDetails details;
 
-    @OneToMany(mappedBy = "job", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference("job-applications")
     private Set<JobApplication> applications = new HashSet<>();
 }
 

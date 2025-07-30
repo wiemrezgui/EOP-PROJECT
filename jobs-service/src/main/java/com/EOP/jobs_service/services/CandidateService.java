@@ -75,6 +75,8 @@ public class CandidateService {
     }
     private void sendJobApplicationEvent(Candidate candidate, Long jobId) {
         try {
+            log.info("Starting to send job application event for candidate: {}", candidate.getEmail());
+
             Job job = jobRepository.findById(jobId)
                     .orElseThrow(() -> new JobNotFoundException("Job not found"));
 
@@ -85,7 +87,9 @@ public class CandidateService {
                     LocalDate.now()
             );
 
+            log.info("Created event: {}", event);
             kafkaTemplate.send("job-application", event);
+            log.info("Message sent to Kafka topic: job-application");
         } catch (Exception e) {
             log.error("Error creating job application event", e);
         }

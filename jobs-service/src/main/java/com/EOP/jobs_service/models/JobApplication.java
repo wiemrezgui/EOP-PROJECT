@@ -1,5 +1,6 @@
 package com.EOP.jobs_service.models;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,12 +13,14 @@ public class JobApplication {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long applicationId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "candidate_id")
+    @JsonBackReference("candidate-applications")
     private Candidate candidate;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "job_id")
+    @JsonBackReference("job-applications")
     private Job job;
 
     private String stage;

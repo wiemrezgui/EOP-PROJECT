@@ -5,6 +5,9 @@ import com.EOP.jobs_service.DTOs.CandidateApplicationRequest;
 import com.EOP.jobs_service.DTOs.CandidateResponse;
 import com.EOP.jobs_service.models.Candidate;
 import com.EOP.jobs_service.services.CandidateService;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Encoding;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,17 +34,17 @@ public class CandidateController {
 
     private final CandidateService candidateService;
 
-    @Operation(summary = "Apply for a job", description = "Submit a job application (creates candidate if new)")
-    @PostMapping(value = "/apply", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Apply for a job", description = "Submit a job application")
+    @PostMapping(value = "/apply", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<CandidateResponse> applyForJob(
-            @Valid @RequestPart CandidateApplicationRequest applicationRequest,
-            @RequestPart(required = false) MultipartFile resume) throws IOException {
+            @Valid @RequestParam(required = true) Long jobId,
+            @Valid @RequestParam(required = true) String email,
+            @RequestPart(required = true) MultipartFile resume) throws IOException {
 
         CandidateApplicationDto dto = new CandidateApplicationDto();
-        dto.setEmail(applicationRequest.getEmail());
-        dto.setJobId(applicationRequest.getJobId());
+        dto.setEmail(email);
+        dto.setJobId(jobId);
         dto.setResume(resume);
-
         Candidate candidate = candidateService.applyForJob(dto);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new CandidateResponse(candidate));

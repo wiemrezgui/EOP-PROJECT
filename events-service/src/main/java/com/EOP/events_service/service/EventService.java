@@ -4,6 +4,7 @@ import events.AccountCreatedEvent;
 import events.JobApplicationEvent;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -21,6 +22,7 @@ import java.util.Map;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class EventService {
     private final JavaMailSender mailSender;
     private final static String emailVerificationPath = "templates/email-verification.html";
@@ -56,27 +58,33 @@ public class EventService {
     }
     @KafkaListener(topics = "job-application")
     public void handleJobApplication(JobApplicationEvent event) throws MessagingException, IOException, jakarta.mail.MessagingException {
-        MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+        log.info("Received job application event: {}", event);
+        log.info("Processing job application for: {} - Job: {}", event.getCandidateEmail(), event.getJobTitle());
 
-        // Base configuration
-        helper.setFrom(noreplyEmail);
-        helper.setTo(event.getCandidateEmail());
-        helper.setSubject("Application Confirmation: " + event.getJobTitle());
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-        // Load and process template
-        String htmlContent = loadTemplate("templates/job-application.html");
-        Map<String, String> variables = new HashMap<>();
-        variables.put("jobTitle", event.getJobTitle());
-        variables.put("applicationDate", event.getApplicationDate().format(DateTimeFormatter.ofPattern("MMMM dd, yyyy")));
-        String finalContent = replaceVariables(htmlContent, variables);
-        helper.setText(finalContent, true);
+            helper.setFrom(noreplyEmail);
+            helper.setTo(event.getCandidateEmail());
+            helper.setSubject("Application Confirmation: " + event.getJobTitle());
 
-        // Add logo
-        ClassPathResource logo = new ClassPathResource("images/EOP-logo.png");
-        helper.addInline("logo", logo);
+            String htmlContent = loadTemplate("templates/job-application.html");
+            Map<String, String> variables = new HashMap<>();
+            variables.put("jobTitle", event.getJobTitle());
+            variables.put("applicationDate", event.getApplicationDate().format(DateTimeFormatter.ofPattern("MMMM dd, yyyy")));
+            String finalContent = replaceVariables(htmlContent, variables);
+            helper.setText(finalContent, true);
 
-        mailSender.send(message);
+            ClassPathResource logo = new ClassPathResource("images/EOP-logo.png");
+            helper.addInline("logo", logo);
+
+            mailSender.send(message);
+            log.info("Email sent successfully for job application: {}", event.getJobTitle());
+        } catch (Exception e) {
+            log.error("Error processing job application event", e);
+            throw e;
+        }
     }
     private String loadTemplate(String path) throws IOException {
         ClassPathResource resource = new ClassPathResource(path);
