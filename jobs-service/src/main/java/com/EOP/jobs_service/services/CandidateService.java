@@ -1,6 +1,7 @@
 package com.EOP.jobs_service.services;
 
 import com.EOP.jobs_service.DTOs.CandidateApplicationDto;
+import com.EOP.jobs_service.DTOs.CandidateResponse;
 import com.EOP.jobs_service.exceptions.AppliedJobException;
 import com.EOP.jobs_service.exceptions.CandidateNotFoundException;
 import com.EOP.jobs_service.exceptions.JobNotFoundException;
@@ -97,7 +98,7 @@ public class CandidateService {
     @Cacheable(value = ALL_CANDIDATES_CACHE, key = "#pageable.pageNumber")
     public Page<Candidate> getAllCandidates(Pageable pageable) {
         log.info("Fetching candidates from database (page {})", pageable.getPageNumber());
-        return candidateRepository.findAll(pageable);
+        return candidateRepository.findAllCandidates(pageable);
     }
 
     @Cacheable(value = CANDIDATE_BY_ID_CACHE, key = "#id")
@@ -131,10 +132,11 @@ public class CandidateService {
     }
 
     @Cacheable(value = JOB_APPLICATIONS_CACHE, key = "#jobId + '_' + #pageable.pageNumber")
-    public Page<Candidate> getApplicantsForJob(Long jobId, Pageable pageable) {
-        return jobApplicationRepository.findByJobId(jobId, pageable)
-                .map(JobApplication::getCandidate);
+    public Page<CandidateResponse> getApplicantsForJob(Long jobId, Pageable pageable) {
+        return jobApplicationRepository.findCandidatesByJobId(jobId, pageable)
+                .map(CandidateResponse::new);
     }
+
 
     private void createJobApplication(Candidate candidate, Long jobId) {
         Job job = jobRepository.findById(jobId)

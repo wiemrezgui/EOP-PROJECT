@@ -110,8 +110,8 @@ public class CandidateController {
             @RequestParam(defaultValue = "15") int size) {
 
         Pageable pageable = PageRequest.of(page, size);
-        Page<CandidateResponse> response = candidateService.getApplicantsForJob(jobId, pageable)
-                .map(CandidateResponse::new);
+        Page<CandidateResponse> response = candidateService.getApplicantsForJob(jobId, pageable);
+
         return ResponseEntity.ok(response);
     }
 }
