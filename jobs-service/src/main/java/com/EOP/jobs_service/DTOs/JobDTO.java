@@ -18,5 +18,6 @@ public class JobDTO {
 
     @Type(JsonType.class)
     @Column(columnDefinition = "jsonb")
+    @NotBlank(message = "Job details are required")
     private JobDetails details;
 }

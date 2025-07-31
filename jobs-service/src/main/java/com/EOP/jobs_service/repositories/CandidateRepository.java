@@ -19,4 +19,5 @@ public interface CandidateRepository extends JpaRepository<Candidate, Long> {
     Page<Candidate> findByStatus(@Param("status") CandidateStatus status, Pageable pageable);
 
     Optional<Candidate> findByEmail(@Email String email);
+
 }

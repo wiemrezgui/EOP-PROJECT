@@ -10,3 +10,6 @@ jwt:
 # Local development overrides
 server:
   port: 8081
+springdoc:
+  api-docs:
+    enabled: true

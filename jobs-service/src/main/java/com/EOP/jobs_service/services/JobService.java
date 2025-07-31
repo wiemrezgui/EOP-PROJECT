@@ -2,6 +2,7 @@ package com.EOP.jobs_service.services;
 
 import com.EOP.jobs_service.DTOs.JobDTO;
 import com.EOP.jobs_service.exceptions.JobNotFoundException;
+import com.EOP.jobs_service.exceptions.NoApplicantsFoundException;
 import com.EOP.jobs_service.models.Job;
 import com.EOP.jobs_service.repositories.JobRepository;
 import lombok.RequiredArgsConstructor;
@@ -66,10 +67,9 @@ public class JobService {
                 .orElseThrow(() -> new JobNotFoundException("Job not found with id: " + id));
     }
 
-    @CachePut(value = JOB_BY_ID_CACHE, key = "#id")
     @CacheEvict(value = {JOBS_LIST_CACHE,JOB_BY_ID_CACHE}, allEntries = true)
+    @CachePut(value = JOB_BY_ID_CACHE, key = "#id")
     public Job updateJob(Long id, JobDTO jobDTO) {
-        System.out.println("id in service"+id);
         Job existingJob = jobRepository.findById(id)
                 .orElseThrow(() -> new JobNotFoundException("Job not found with id: " + id));
         existingJob.setTitle(jobDTO.getTitle());
@@ -79,19 +79,26 @@ public class JobService {
 
     @CacheEvict(value = {JOBS_LIST_CACHE, JOBS_COUNT_CACHE, JOB_BY_ID_CACHE}, allEntries = true)
     public void deleteJob(Long id) {
+        Job existingJob = jobRepository.findById(id)
+                .orElseThrow(() -> new JobNotFoundException("Job not found with id: " + id));
         jobRepository.deleteById(id);
     }
 
-    @CachePut(value = JOB_BY_ID_CACHE, key = "#id")
     @CacheEvict(value = {JOBS_LIST_CACHE, JOB_BY_ID_CACHE}, allEntries = true)
+    @CachePut(value = JOB_BY_ID_CACHE, key = "#id")
     public Job updateJobStatus(Long id, JobStatus newStatus) {
-        Job job = getJobById(id);
+        Job job = jobRepository.findById(id)
+                .orElseThrow(() -> new JobNotFoundException("Job not found"));
         job.setStatus(newStatus);
         return jobRepository.save(job);
     }
 
     @Cacheable(value = "jobs_by_status", key = "#status.name() + '_' + #pageable.pageNumber")
     public Page<Job> getJobsByStatus(JobStatus status, Pageable pageable) {
-        return jobRepository.findByStatus(status, pageable);
+        Page<Job> jobs =jobRepository.findByStatus(status, pageable);
+        if (jobs.isEmpty()) {
+            throw new NoApplicantsFoundException("No jobs found for this status ");
+        }
+        return jobs;
     }
 }

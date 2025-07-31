@@ -2,10 +2,7 @@ package com.EOP.jobs_service.services;
 
 import com.EOP.jobs_service.DTOs.CandidateApplicationDto;
 import com.EOP.jobs_service.DTOs.CandidateResponse;
-import com.EOP.jobs_service.exceptions.AppliedJobException;
-import com.EOP.jobs_service.exceptions.CandidateNotFoundException;
-import com.EOP.jobs_service.exceptions.JobNotFoundException;
-import com.EOP.jobs_service.exceptions.ResourceNotFoundException;
+import com.EOP.jobs_service.exceptions.*;
 import com.EOP.jobs_service.models.Candidate;
 import com.EOP.jobs_service.models.CandidateStatus;
 import com.EOP.jobs_service.models.Job;
@@ -21,6 +18,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -28,6 +26,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -70,7 +69,6 @@ public class CandidateService {
 
         Candidate savedCandidate = candidateRepository.save(candidate);
         createJobApplication(savedCandidate, applicationDto.getJobId());
-        cacheCandidate(savedCandidate);
         sendJobApplicationEvent(savedCandidate, applicationDto.getJobId());
         return savedCandidate;
     }
@@ -131,32 +129,43 @@ public class CandidateService {
         return resource;
     }
 
-    @Cacheable(value = JOB_APPLICATIONS_CACHE, key = "#jobId + '_' + #pageable.pageNumber")
-    public Page<CandidateResponse> getApplicantsForJob(Long jobId, Pageable pageable) {
-        return jobApplicationRepository.findCandidatesByJobId(jobId, pageable)
+
+    @Cacheable(value = JOB_APPLICATIONS_CACHE, key = "#jobId + '_' + #pageable.pageNumber + '_content'")
+    public List<CandidateResponse> getApplicantsContentForJob(Long jobId, Pageable pageable) {
+        Page<CandidateResponse> applicants = jobApplicationRepository.findCandidatesByJobId(jobId, pageable)
                 .map(CandidateResponse::new);
+        return applicants.getContent();
     }
 
+    @Cacheable(value = JOB_APPLICATIONS_CACHE, key = "#jobId + '_total'")
+    public long getTotalApplicantsForJob(Long jobId) {
+        return jobApplicationRepository.countByJobId(jobId);
+    }
+
+    public Page<CandidateResponse> getApplicantsForJob(Long jobId, Pageable pageable) {
+        if (!jobRepository.existsById(jobId)) {
+            throw new JobNotFoundException("Job with ID " + jobId + " not found");
+        }
+
+        List<CandidateResponse> content = getApplicantsContentForJob(jobId, pageable);
+        long totalElements = getTotalApplicantsForJob(jobId);
+
+        if (content.isEmpty()) {
+            throw new NoApplicantsFoundException("No applicants found for job ID " + jobId);
+        }
+
+        return new PageImpl<>(content, pageable, totalElements);
+    }
 
     private void createJobApplication(Candidate candidate, Long jobId) {
         Job job = jobRepository.findById(jobId)
-                .orElseThrow(() -> new CandidateNotFoundException("Job not found"));
+                .orElseThrow(() -> new JobNotFoundException("Job not found"));
 
         JobApplication application = new JobApplication();
         application.setCandidate(candidate);
         application.setJob(job);
-        application.setStage("APPLIED");
+        application.setStage("Waiting for response");
         jobApplicationRepository.save(application);
     }
 
-    private void cacheCandidate(Candidate candidate) {
-        redisTemplate.opsForValue().set(
-                CANDIDATE_BY_ID_CACHE + candidate.getId(),
-                candidate
-        );
-        redisTemplate.opsForValue().set(
-                CANDIDATE_BY_EMAIL_CACHE + candidate.getEmail(),
-                candidate
-        );
-    }
 }
