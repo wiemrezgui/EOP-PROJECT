@@ -1,7 +1,6 @@
 package com.EOP.jobs_service.DTOs;
 
 import com.EOP.jobs_service.models.Candidate;
-import com.EOP.jobs_service.models.CandidateStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

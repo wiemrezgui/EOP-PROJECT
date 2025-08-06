@@ -1,7 +1,7 @@
 package com.EOP.jobs_service.models;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.EOP.jobs_service.enums.JobStatus;
+import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
@@ -17,6 +17,8 @@ import java.util.*;
 @Entity
 @Table(name = "job")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "@class")
 public class Job {
 
     @Id
@@ -39,6 +41,7 @@ public class Job {
 
     @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference("job-applications")
+    @JsonIgnore
     private Set<JobApplication> applications = new HashSet<>();
 }
 

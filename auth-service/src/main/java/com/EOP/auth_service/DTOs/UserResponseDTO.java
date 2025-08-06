@@ -1,6 +1,6 @@
 package com.EOP.auth_service.DTOs;
 
-import com.EOP.auth_service.model.Role;
+import com.EOP.common_lib.common.enums.Role;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 

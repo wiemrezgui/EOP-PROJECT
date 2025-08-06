@@ -1,7 +1,7 @@
 package com.EOP.auth_service.jwt;
 
 import com.EOP.auth_service.exception.InvalidDataException;
-import com.EOP.auth_service.exception.UserNotFoundException;
+import com.EOP.common_lib.common.exceptions.ResourceNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
@@ -19,12 +19,12 @@ public class JwtAuthEntryPoint implements AuthenticationEntryPoint {
                          AuthenticationException authException) throws IOException {
 
         response.setContentType("application/json");
-
-        if (authException instanceof UserNotFoundException) {
+        Throwable cause = authException.getCause();
+        if (cause instanceof ResourceNotFoundException) {
             response.setStatus(HttpStatus.NOT_FOUND.value());
             response.getWriter().write("{ \"error\": \"User not found\" }");
         }
-        else if (authException instanceof InvalidDataException) {
+        if (authException instanceof InvalidDataException) {
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
             response.getWriter().write("{ \"error\": \"Invalid credentials\" }");
         }

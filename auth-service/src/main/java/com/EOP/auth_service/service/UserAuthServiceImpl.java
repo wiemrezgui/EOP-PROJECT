@@ -3,10 +3,11 @@ package com.EOP.auth_service.service;
 import com.EOP.auth_service.DTOs.*;
 import com.EOP.auth_service.exception.*;
 import com.EOP.auth_service.jwt.JwtTokenProvider;
-import com.EOP.auth_service.model.Department;
-import com.EOP.auth_service.model.Role;
-import com.EOP.auth_service.model.User;
+import com.EOP.auth_service.models.User;
 import com.EOP.auth_service.repository.UserAuthRepository;
+import com.EOP.common_lib.common.enums.Department;
+import com.EOP.common_lib.common.enums.Role;
+import com.EOP.common_lib.common.exceptions.ResourceNotFoundException;
 import events.AccountCreatedEvent;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
@@ -51,9 +52,9 @@ public class UserAuthServiceImpl {
             // Check if user exists first
             try {
                 userDetailsService.loadUserByUsername(data.getEmail());
-            } catch (UserNotFoundException e) {
+            } catch (ResourceNotFoundException e) {
                 log.warn("Login attempt for non-existent user: {}", data.getEmail());
-                throw new UserNotFoundException("No account found with this email");
+                throw new ResourceNotFoundException("No account found with this email");
             }
 
             // Authenticate user
@@ -70,19 +71,18 @@ public class UserAuthServiceImpl {
                 }
 
                 // Get user details
-                UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-                Optional<User> user = userRepository.findByEmail(data.getEmail());
-
+                User user = userRepository.findByEmail(data.getEmail())
+                        .orElseThrow(() -> new ResourceNotFoundException("No user found with this email"));
+                        ;
                 // Generate tokens
-                String token = jwtTokenProvider.generateToken(userDetails);
+                String token = jwtTokenProvider.generateTokenFromUser(user);
                 String refreshToken = jwtTokenProvider.generateRefreshToken(data.getEmail());
 
                 log.info("Login successful for email: {}", data.getEmail());
 
                 return LoginResponseDTO.builder()
-                        .token(token)
+                        .accessToken(token)
                         .refreshToken(refreshToken)
-                        .verified(user.get().isVerified())
                         .build();
 
             } catch (BadCredentialsException e) {
@@ -98,7 +98,7 @@ public class UserAuthServiceImpl {
                 log.error("Authentication error for user {}: {}", data.getEmail(), e.getMessage());
                 throw new AuthenticationFailedException("Authentication failed");
             }
-        } catch (UserNotFoundException e) {
+        } catch (ResourceNotFoundException e) {
             throw e;
         }
     }
@@ -190,7 +190,7 @@ public class UserAuthServiceImpl {
 
             // Verify user still exists
             User user = userRepository.findByEmail(email)
-                    .orElseThrow(() -> new UserNotFoundException("User not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
             // Generate new tokens
             UserDetails userDetails = new org.springframework.security.core.userdetails.User(
@@ -212,7 +212,7 @@ public class UserAuthServiceImpl {
                     .build();
 
         } catch (Exception e) {
-            if (e instanceof InvalidTokenException || e instanceof UserNotFoundException) {
+            if (e instanceof InvalidTokenException || e instanceof ResourceNotFoundException) {
                 throw e;
             }
             log.error("Error refreshing token: {}", e.getMessage(), e);
@@ -253,7 +253,7 @@ public class UserAuthServiceImpl {
             }
 
             User user = userRepository.findByEmail(email.trim().toLowerCase())
-                    .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
 
             if (user.isVerified()) {
                 throw new InvalidDataException("Account is already verified");
@@ -265,7 +265,7 @@ public class UserAuthServiceImpl {
             log.info("Account verified successfully for user: {}", email);
 
         } catch (Exception e) {
-            if (e instanceof UserNotFoundException || e instanceof InvalidDataException) {
+            if (e instanceof ResourceNotFoundException || e instanceof InvalidDataException) {
                 throw e;
             }
             log.error("Error verifying account for email {}: {}", email, e.getMessage(), e);

@@ -1,5 +1,6 @@
 package com.EOP.jobs_service.models;
 
+import com.EOP.common_lib.common.enums.Department;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;

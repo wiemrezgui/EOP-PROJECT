@@ -18,6 +18,7 @@
         <module>contract-service</module>
         <module>jobs-service</module>
         <module>events-service</module>
+        <module>common-lib</module>
     </modules>
 
     <properties>

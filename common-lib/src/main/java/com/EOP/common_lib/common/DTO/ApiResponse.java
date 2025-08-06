@@ -1,4 +1,4 @@
-package com.EOP.auth_service.model;
+package com.EOP.common_lib.common.DTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

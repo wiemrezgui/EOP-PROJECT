@@ -1,9 +1,8 @@
 package com.EOP.auth_service.controller;
 
 import com.EOP.auth_service.DTOs.*;
-import com.EOP.auth_service.exception.InvalidTokenException;
-import com.EOP.auth_service.model.ApiResponse;
 import com.EOP.auth_service.service.UserAuthServiceImpl;
+import com.EOP.common_lib.common.DTO.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;

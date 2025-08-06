@@ -1,5 +1,7 @@
-package com.EOP.auth_service.model;
+package com.EOP.auth_service.models;
 
+import com.EOP.common_lib.common.enums.Department;
+import com.EOP.common_lib.common.enums.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

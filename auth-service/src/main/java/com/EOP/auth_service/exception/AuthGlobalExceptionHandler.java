@@ -1,6 +1,7 @@
 package com.EOP.auth_service.exception;
 
-import com.EOP.auth_service.model.ApiResponse;
+import com.EOP.common_lib.common.DTO.ApiResponse;
+import com.EOP.common_lib.common.exceptions.ResourceNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -31,9 +32,9 @@ public class AuthGlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
-    @ExceptionHandler(UserNotFoundException.class)
+    @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiResponse<Void>> handleUserNotFoundException(
-            UserNotFoundException ex, HttpServletRequest request) {
+            ResourceNotFoundException ex, HttpServletRequest request) {
         log.warn("User not found: {}", ex.getMessage());
 
         ApiResponse<Void> response = ApiResponse.error(

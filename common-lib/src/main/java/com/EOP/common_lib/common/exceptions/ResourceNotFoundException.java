@@ -1,10 +1,11 @@
-package com.EOP.jobs_service.exceptions;
+package com.EOP.common_lib.common.exceptions;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(HttpStatus.NOT_FOUND)
-public class CandidateNotFoundException extends RuntimeException {
-    public CandidateNotFoundException(String message) {
+public class ResourceNotFoundException extends RuntimeException {
+    public ResourceNotFoundException(String message) {
         super(message);
     }
 }

@@ -1,9 +1,11 @@
 package com.EOP.jobs_service.controllers;
 
+import com.EOP.common_lib.common.DTO.ApiResponse;
+import com.EOP.common_lib.common.annotation.RequireDepartmentPermission;
+import com.EOP.common_lib.common.enums.Role;
 import com.EOP.jobs_service.DTOs.JobDTO;
-import com.EOP.jobs_service.models.ApiResponse;
 import com.EOP.jobs_service.models.Job;
-import com.EOP.jobs_service.models.JobStatus;
+import com.EOP.jobs_service.enums.JobStatus;
 import com.EOP.jobs_service.services.JobService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -26,6 +28,7 @@ public class JobController {
 
     @Operation(summary = "Create a new job")
     @PostMapping
+    @RequireDepartmentPermission(service = "jobs", action = "create", allowedRoles = {Role.EMPLOYER})
     public ResponseEntity<ApiResponse<Job>> createJob(
             @RequestBody JobDTO job) {
         Job newJob = jobService.createJob(job);
@@ -37,6 +40,7 @@ public class JobController {
 
     @Operation(summary = "Get all jobs with pagination")
     @GetMapping
+    @RequireDepartmentPermission(service = "jobs", action = "read")
     public ResponseEntity<ApiResponse<Page<Job>>> getAllJobs(
             @Parameter(description = "Page number (0-based)", example = "0")
             @RequestParam(defaultValue = "0") int page,
@@ -52,6 +56,7 @@ public class JobController {
 
     @Operation(summary = "Get job by ID")
     @GetMapping("/{id}")
+    @RequireDepartmentPermission(service = "jobs", action = "read")
     public ResponseEntity<ApiResponse<Job>> getJobById(
             @Parameter(description = "Job ID", example = "1")
             @PathVariable Long id) {
@@ -64,6 +69,7 @@ public class JobController {
 
     @Operation(summary = "Update job")
     @PutMapping("/{id}")
+    @RequireDepartmentPermission(service = "jobs", action = "update", allowedRoles = {Role.EMPLOYER})
     public ResponseEntity<ApiResponse<Job>> updateJob(
             @Parameter(description = "Job ID", example = "1")
             @PathVariable Long id,
@@ -77,6 +83,7 @@ public class JobController {
 
     @Operation(summary = "Delete job")
     @DeleteMapping("/{id}")
+    @RequireDepartmentPermission(service = "jobs", action = "delete", allowedRoles = {Role.EMPLOYER})
     public ResponseEntity<ApiResponse<Void>> deleteJob(
             @Parameter(description = "Job ID", example = "1")
             @PathVariable Long id) {
@@ -88,6 +95,7 @@ public class JobController {
 
     @Operation(summary = "Update job status")
     @PatchMapping("/{id}/status")
+    @RequireDepartmentPermission(service = "jobs", action = "update-status", allowedRoles = {Role.EMPLOYER})
     public ResponseEntity<ApiResponse<Job>> updateJobStatus(
             @Parameter(description = "Job ID", example = "1")
             @PathVariable Long id,
@@ -103,6 +111,7 @@ public class JobController {
 
     @Operation(summary = "Get jobs by status with pagination")
     @GetMapping("/status/{status}")
+    @RequireDepartmentPermission(service = "jobs", action = "read")
     public ResponseEntity<ApiResponse<Page<Job>>> getJobsByStatus(
             @Parameter(description = "Job status", example = "PUBLISHED")
             @PathVariable JobStatus status,

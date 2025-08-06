@@ -1,15 +1,13 @@
 package com.EOP.jobs_service.services;
 
+import com.EOP.common_lib.common.exceptions.ResourceNotFoundException;
 import com.EOP.jobs_service.DTOs.JobDTO;
-import com.EOP.jobs_service.exceptions.JobNotFoundException;
-import com.EOP.jobs_service.exceptions.NoApplicantsFoundException;
 import com.EOP.jobs_service.models.Job;
 import com.EOP.jobs_service.repositories.JobRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -19,18 +17,19 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 
-import com.EOP.jobs_service.models.JobStatus;
+import com.EOP.jobs_service.enums.JobStatus;
 
 @Service
 @RequiredArgsConstructor
 public class JobService {
     private final JobRepository jobRepository;
-    private final RedisTemplate<String, Object> redisTemplate;
 
     // Cache keys
     private static final String JOBS_LIST_CACHE = "jobs-list";
     private static final String JOBS_COUNT_CACHE = "jobs-count";
     private static final String JOB_BY_ID_CACHE = "job_";
+    private static final String JOBS_BY_STATUS_CACHE = "jobs_by_status";
+    private static final String JOBS_BY_STATUS_COUNT_CACHE = "jobs_by_status_count";
 
     @CacheEvict(value = {JOBS_LIST_CACHE, JOBS_COUNT_CACHE}, allEntries = true)
     public Job createJob(JobDTO jobDTO) {
@@ -64,14 +63,14 @@ public class JobService {
     @Cacheable(value = JOB_BY_ID_CACHE, key = "#id")
     public Job getJobById(Long id) {
         return jobRepository.findById(id)
-                .orElseThrow(() -> new JobNotFoundException("Job not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Job not found with id: " + id));
     }
 
     @CacheEvict(value = {JOBS_LIST_CACHE,JOB_BY_ID_CACHE}, allEntries = true)
     @CachePut(value = JOB_BY_ID_CACHE, key = "#id")
     public Job updateJob(Long id, JobDTO jobDTO) {
         Job existingJob = jobRepository.findById(id)
-                .orElseThrow(() -> new JobNotFoundException("Job not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Job not found with id: " + id));
         existingJob.setTitle(jobDTO.getTitle());
         existingJob.setDetails(jobDTO.getDetails());
         return jobRepository.save(existingJob);
@@ -80,7 +79,7 @@ public class JobService {
     @CacheEvict(value = {JOBS_LIST_CACHE, JOBS_COUNT_CACHE, JOB_BY_ID_CACHE}, allEntries = true)
     public void deleteJob(Long id) {
         Job existingJob = jobRepository.findById(id)
-                .orElseThrow(() -> new JobNotFoundException("Job not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Job not found with id: " + id));
         jobRepository.deleteById(id);
     }
 
@@ -88,17 +87,29 @@ public class JobService {
     @CachePut(value = JOB_BY_ID_CACHE, key = "#id")
     public Job updateJobStatus(Long id, JobStatus newStatus) {
         Job job = jobRepository.findById(id)
-                .orElseThrow(() -> new JobNotFoundException("Job not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Job not found"));
         job.setStatus(newStatus);
         return jobRepository.save(job);
     }
 
-    @Cacheable(value = "jobs_by_status", key = "#status.name() + '_' + #pageable.pageNumber")
-    public Page<Job> getJobsByStatus(JobStatus status, Pageable pageable) {
-        Page<Job> jobs =jobRepository.findByStatus(status, pageable);
-        if (jobs.isEmpty()) {
-            throw new NoApplicantsFoundException("No jobs found for this status ");
+    @Cacheable(value = JOBS_BY_STATUS_CACHE,
+            key = "#status.name() + '_page:' + #pageable.pageNumber + ':size:' + #pageable.pageSize")
+    public List<Job> getJobsListByStatus(JobStatus status, Pageable pageable) {
+        Page<Job> page = jobRepository.findByStatus(status, pageable);
+        if (page.isEmpty()) {
+            throw new ResourceNotFoundException("No jobs found for status: " + status);
         }
-        return jobs;
+        return page.getContent();
+    }
+
+    @Cacheable(value = JOBS_BY_STATUS_COUNT_CACHE, key = "#status.name()")
+    public long getTotalJobsCountByStatus(JobStatus status) {
+        return jobRepository.countByStatus(status);
+    }
+
+    public Page<Job> getJobsByStatus(JobStatus status, Pageable pageable) {
+        List<Job> content = getJobsListByStatus(status, pageable);
+        long totalCount = getTotalJobsCountByStatus(status);
+        return new PageImpl<>(content, pageable, totalCount);
     }
 }

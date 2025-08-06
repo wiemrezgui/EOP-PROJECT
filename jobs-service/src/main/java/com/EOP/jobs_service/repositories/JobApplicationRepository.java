@@ -17,5 +17,5 @@ public interface JobApplicationRepository extends JpaRepository<JobApplication, 
             "WHERE ja.job.id = :jobId")
     Page<Candidate> findCandidatesByJobId(@Param("jobId") Long jobId, Pageable pageable);
     @Cacheable(value = "job_applications_count", key = "#jobId")
-    long countByJobId(Long jobId);
+    int countByJobId(Long jobId);
 }

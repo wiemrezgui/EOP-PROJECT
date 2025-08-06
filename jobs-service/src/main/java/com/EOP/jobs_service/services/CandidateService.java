@@ -1,10 +1,11 @@
 package com.EOP.jobs_service.services;
 
+import com.EOP.common_lib.common.exceptions.ResourceNotFoundException;
 import com.EOP.jobs_service.DTOs.CandidateApplicationDto;
 import com.EOP.jobs_service.DTOs.CandidateResponse;
 import com.EOP.jobs_service.exceptions.*;
 import com.EOP.jobs_service.models.Candidate;
-import com.EOP.jobs_service.models.CandidateStatus;
+import com.EOP.jobs_service.enums.CandidateStatus;
 import com.EOP.jobs_service.models.Job;
 import com.EOP.jobs_service.models.JobApplication;
 import com.EOP.jobs_service.repositories.CandidateRepository;
@@ -39,6 +40,7 @@ public class CandidateService {
     private final KafkaTemplate<String, JobApplicationEvent> kafkaTemplate;
     // Cache keys
     private static final String ALL_CANDIDATES_CACHE = "all_candidates";
+    private static final String CANDIDATES_COUNT_CACHE = "candidates-count";
     private static final String CANDIDATE_BY_ID_CACHE = "candidate_";
     private static final String CANDIDATE_BY_EMAIL_CACHE = "candidate_email_";
     private static final String JOB_APPLICATIONS_CACHE = "job_applications";
@@ -77,7 +79,7 @@ public class CandidateService {
             log.info("Starting to send job application event for candidate: {}", candidate.getEmail());
 
             Job job = jobRepository.findById(jobId)
-                    .orElseThrow(() -> new JobNotFoundException("Job not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Job not found"));
 
             JobApplicationEvent event = new JobApplicationEvent(
                     candidate.getEmail(),
@@ -93,24 +95,35 @@ public class CandidateService {
             log.error("Error creating job application event", e);
         }
     }
-    @Cacheable(value = ALL_CANDIDATES_CACHE, key = "#pageable.pageNumber")
+    @Cacheable(value = ALL_CANDIDATES_CACHE, key = "'page:' + #pageable.pageNumber + ':size:' + #pageable.pageSize")
+    public List<Candidate> getCandidatesList(Pageable pageable) {
+        Page<Candidate> page = candidateRepository.findAll(pageable);
+        return page.getContent();
+    }
+
+    @Cacheable(value = CANDIDATES_COUNT_CACHE, key = "'total'")
+    public long getTotalCandidatesCount() {
+        return candidateRepository.count();
+    }
+
     public Page<Candidate> getAllCandidates(Pageable pageable) {
-        log.info("Fetching candidates from database (page {})", pageable.getPageNumber());
-        return candidateRepository.findAllCandidates(pageable);
+        List<Candidate> candidates = getCandidatesList(pageable);
+        long totalCount = getTotalCandidatesCount();
+        return new PageImpl<>(candidates, pageable, totalCount);
     }
 
     @Cacheable(value = CANDIDATE_BY_ID_CACHE, key = "#id")
     public Candidate getCandidateById(Long id) {
         log.info("Fetching candidate {} from database", id);
         return candidateRepository.findById(id)
-                .orElseThrow(() -> new CandidateNotFoundException("Candidate not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Candidate not found"));
     }
 
     @Cacheable(value = CANDIDATE_BY_EMAIL_CACHE, key = "#email")
     public Candidate getCandidateByEmail(String email) {
         log.info("Fetching candidate by email {}", email);
         return candidateRepository.findByEmail(email)
-                .orElseThrow(() -> new CandidateNotFoundException("Candidate not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Candidate not found"));
     }
 
     public Resource downloadResume(Long candidateId) {
@@ -138,20 +151,20 @@ public class CandidateService {
     }
 
     @Cacheable(value = JOB_APPLICATIONS_CACHE, key = "#jobId + '_total'")
-    public long getTotalApplicantsForJob(Long jobId) {
+    public int getTotalApplicantsForJob(Long jobId) {
         return jobApplicationRepository.countByJobId(jobId);
     }
 
     public Page<CandidateResponse> getApplicantsForJob(Long jobId, Pageable pageable) {
         if (!jobRepository.existsById(jobId)) {
-            throw new JobNotFoundException("Job with ID " + jobId + " not found");
+            throw new ResourceNotFoundException("Job with ID " + jobId + " not found");
         }
 
         List<CandidateResponse> content = getApplicantsContentForJob(jobId, pageable);
-        long totalElements = getTotalApplicantsForJob(jobId);
+        int totalElements = getTotalApplicantsForJob(jobId);
 
         if (content.isEmpty()) {
-            throw new NoApplicantsFoundException("No applicants found for job ID " + jobId);
+            throw new ResourceNotFoundException("No applicants found for job ID " + jobId);
         }
 
         return new PageImpl<>(content, pageable, totalElements);
@@ -159,7 +172,7 @@ public class CandidateService {
 
     private void createJobApplication(Candidate candidate, Long jobId) {
         Job job = jobRepository.findById(jobId)
-                .orElseThrow(() -> new JobNotFoundException("Job not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Job not found"));
 
         JobApplication application = new JobApplication();
         application.setCandidate(candidate);

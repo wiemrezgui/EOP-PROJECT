@@ -1,4 +1,4 @@
-package com.EOP.auth_service.model;
+package com.EOP.common_lib.common.enums;
 
 public enum Role {
     EMPLOYER ,ADMIN;

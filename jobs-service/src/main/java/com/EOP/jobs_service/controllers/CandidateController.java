@@ -1,9 +1,10 @@
 package com.EOP.jobs_service.controllers;
 
+import com.EOP.common_lib.common.DTO.ApiResponse;
+import com.EOP.common_lib.common.annotation.RequireDepartmentPermission;
 import com.EOP.jobs_service.DTOs.CandidateApplicationDto;
 import com.EOP.jobs_service.DTOs.CandidateResponse;
 import com.EOP.jobs_service.exceptions.InvalidRequestException;
-import com.EOP.jobs_service.models.ApiResponse;
 import com.EOP.jobs_service.models.Candidate;
 import com.EOP.jobs_service.services.CandidateService;
 import jakarta.validation.constraints.*;
@@ -78,6 +79,7 @@ public class CandidateController {
 
     @Operation(summary = "Get all candidates", description = "Retrieve paginated list of candidates")
     @GetMapping
+    @RequireDepartmentPermission(service = "candidates", action = "read")
     public ResponseEntity<ApiResponse<Page<CandidateResponse>>> getAllCandidates(
             @Parameter(description = "Page number (0-based)", example = "0")
             @RequestParam(defaultValue = "0") @Min(0) int page,
@@ -99,6 +101,7 @@ public class CandidateController {
 
     @Operation(summary = "Get candidate by ID", description = "Retrieve a specific candidate's details")
     @GetMapping("/{id}")
+    @RequireDepartmentPermission(service = "candidates", action = "read-by-id")
     public ResponseEntity<ApiResponse<CandidateResponse>> getCandidateById(
             @Parameter(description = "Candidate ID", example = "1")
             @PathVariable Long id) {
@@ -116,6 +119,7 @@ public class CandidateController {
 
     @Operation(summary = "Get candidate by email", description = "Retrieve a candidate by their email address")
     @GetMapping("/email/{email}")
+    @RequireDepartmentPermission(service = "candidates", action = "read-by-email")
     public ResponseEntity<ApiResponse<CandidateResponse>> getCandidateByEmail(
             @Parameter(description = "Candidate email", example = "john.doe@example.com")
             @PathVariable
@@ -146,6 +150,7 @@ public class CandidateController {
 
     @Operation(summary = "Get job applicants", description = "Retrieve paginated list of applicants for a job")
     @GetMapping("/job/{jobId}/applicants")
+    @RequireDepartmentPermission(service = "candidates", action = "read-applicants")
     public ResponseEntity<ApiResponse<Page<CandidateResponse>>> getApplicantsForJob(
             @Parameter(description = "Job ID", example = "1")
             @NotNull(message = "Job ID is required")

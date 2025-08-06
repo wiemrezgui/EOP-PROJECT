@@ -5,7 +5,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {
+		"com.EOP.jobs_service",
+		"com.EOP.common_lib.common.security"
+})
 @EnableDiscoveryClient
 @EnableCaching
 public class JobsServiceApplication {

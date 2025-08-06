@@ -1,7 +1,7 @@
 package com.EOP.auth_service.service;
 
-import com.EOP.auth_service.exception.UserNotFoundException;
 import com.EOP.auth_service.repository.UserAuthRepository;
+import com.EOP.common_lib.common.exceptions.ResourceNotFoundException;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -22,7 +22,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) {
         return userRepository.findByEmail(email)
                 .map(user -> new User(user.getEmail(), user.getPassword(), Collections.emptyList()))
-                .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
     }
 
 }

@@ -1,6 +1,7 @@
 package com.EOP.jobs_service.exceptions;
 
-import com.EOP.jobs_service.models.ApiResponse;
+import com.EOP.common_lib.common.DTO.ApiResponse;
+import com.EOP.common_lib.common.exceptions.ResourceNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -16,7 +17,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-@RestControllerAdvice
+@RestControllerAdvice(basePackages = {"com.EOP.jobs_service.controllers"})
 @Slf4j
 public class GlobalExceptionHandler {
 
@@ -34,11 +35,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
     }
 
-    @ExceptionHandler({CandidateNotFoundException.class, JobNotFoundException.class, ResourceNotFoundException.class})
+    @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiResponse<Void>> handleNotFoundException(
             RuntimeException ex, HttpServletRequest request) {
         log.warn("Resource not found: {}", ex.getMessage());
-
+        if (isSwaggerRequest(request)) {
+            throw ex;
+        }
         ApiResponse<Void> response = ApiResponse.error(
                 ex.getMessage(),
                 HttpStatus.NOT_FOUND.value(),
@@ -47,7 +50,15 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
-
+    private boolean isSwaggerRequest(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        return path.startsWith("/swagger-ui") ||
+                path.startsWith("/v3/api-docs") ||
+                path.startsWith("/webjars") ||
+                path.startsWith("/swagger-resources") ||
+                path.equals("/favicon.ico") ||
+                path.equals("/swagger-ui.html");
+    }
     @ExceptionHandler(InvalidRequestException.class)
     public ResponseEntity<ApiResponse<Void>> handleInvalidRequestException(
             InvalidRequestException ex, HttpServletRequest request) {
@@ -113,18 +124,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body(response);
     }
 
-    @ExceptionHandler(NoApplicantsFoundException.class)
-    public ResponseEntity<ApiResponse<Void>> handleNoApplicants(NoApplicantsFoundException ex, HttpServletRequest request) {
-        log.warn("No applicants found: {}", ex.getMessage());
-
-        ApiResponse<Void> response = ApiResponse.error(
-                ex.getMessage(),
-                HttpStatus.NOT_FOUND.value(),
-                request.getRequestURI()
-        );
-
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-    }
 
     @ExceptionHandler(IOException.class)
     public ResponseEntity<ApiResponse<Void>> handleIOException(

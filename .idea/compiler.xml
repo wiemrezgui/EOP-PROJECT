@@ -13,6 +13,7 @@
         <module name="contract-service" />
         <module name="api-gateway" />
         <module name="interview-service" />
+        <module name="common-lib" />
         <module name="events-service" />
       </profile>
       <profile name="Annotation profile for eop-project" enabled="true">
@@ -35,6 +36,7 @@
       <module name="CRM-service" options="-parameters" />
       <module name="api-gateway" options="-parameters" />
       <module name="auth-service" options="-parameters" />
+      <module name="common-lib" options="-parameters" />
       <module name="config-service" options="-parameters" />
       <module name="contract-service" options="-parameters" />
       <module name="discovery-service" options="-parameters" />

@@ -1,4 +1,4 @@
-package com.EOP.jobs_service.models;
+package com.EOP.jobs_service.enums;
 
 public enum JobStatus {
     PUBLISHED,
