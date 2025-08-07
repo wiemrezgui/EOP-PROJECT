@@ -2,6 +2,8 @@ package com.EOP.jobs_service.services;
 
 import com.EOP.common_lib.common.exceptions.ResourceNotFoundException;
 import com.EOP.jobs_service.DTOs.JobDTO;
+import com.EOP.jobs_service.DTOs.JobFilterDTO;
+import com.EOP.jobs_service.interfaces.JobRepositoryCustom;
 import com.EOP.jobs_service.models.Job;
 import com.EOP.jobs_service.repositories.JobRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,13 +25,16 @@ import com.EOP.jobs_service.enums.JobStatus;
 @RequiredArgsConstructor
 public class JobService {
     private final JobRepository jobRepository;
-
+    private final JobRepositoryCustom jobRepositoryCustom;
     // Cache keys
     private static final String JOBS_LIST_CACHE = "jobs-list";
     private static final String JOBS_COUNT_CACHE = "jobs-count";
     private static final String JOB_BY_ID_CACHE = "job_";
     private static final String JOBS_BY_STATUS_CACHE = "jobs_by_status";
     private static final String JOBS_BY_STATUS_COUNT_CACHE = "jobs_by_status_count";
+
+    private static final String JOBS_FILTERED_CACHE = "filtered_jobs";
+    private static final String JOBS_FILTERED_COUNT_CACHE = "filtered_jobs_count";
 
     @CacheEvict(value = {JOBS_LIST_CACHE, JOBS_COUNT_CACHE}, allEntries = true)
     public Job createJob(JobDTO jobDTO) {
@@ -110,6 +115,26 @@ public class JobService {
     public Page<Job> getJobsByStatus(JobStatus status, Pageable pageable) {
         List<Job> content = getJobsListByStatus(status, pageable);
         long totalCount = getTotalJobsCountByStatus(status);
+        return new PageImpl<>(content, pageable, totalCount);
+    }
+    @Cacheable(value = JOBS_FILTERED_CACHE,
+            key = "{#filters.hashCode(), #pageable.pageNumber, #pageable.pageSize}")
+    public List<Job> getFilteredJobsList(JobFilterDTO filters, Pageable pageable) {
+        Page<Job> page = jobRepositoryCustom.findWithFilters(filters, pageable);
+        if (page.isEmpty()) {
+            throw new ResourceNotFoundException("No jobs found matching the criteria");
+        }
+        return page.getContent();
+    }
+
+    @Cacheable(value = JOBS_FILTERED_COUNT_CACHE, key = "#filters.hashCode()")
+    public long getFilteredJobsCount(JobFilterDTO filters) {
+        return jobRepositoryCustom.countWithFilters(filters);
+    }
+
+    public Page<Job> getFilteredJobs(JobFilterDTO filters, Pageable pageable) {
+        List<Job> content = getFilteredJobsList(filters, pageable);
+        long totalCount = getFilteredJobsCount(filters);
         return new PageImpl<>(content, pageable, totalCount);
     }
 }

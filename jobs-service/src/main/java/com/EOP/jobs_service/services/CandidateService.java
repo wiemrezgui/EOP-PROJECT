@@ -2,8 +2,10 @@ package com.EOP.jobs_service.services;
 
 import com.EOP.common_lib.common.exceptions.ResourceNotFoundException;
 import com.EOP.jobs_service.DTOs.CandidateApplicationDto;
+import com.EOP.jobs_service.DTOs.CandidateFilterDTO;
 import com.EOP.jobs_service.DTOs.CandidateResponse;
 import com.EOP.jobs_service.exceptions.*;
+import com.EOP.jobs_service.interfaces.CandidateRepositoryCustom;
 import com.EOP.jobs_service.models.Candidate;
 import com.EOP.jobs_service.enums.CandidateStatus;
 import com.EOP.jobs_service.models.Job;
@@ -36,7 +38,7 @@ public class CandidateService {
     private final CandidateRepository candidateRepository;
     private final JobRepository jobRepository;
     private final JobApplicationRepository jobApplicationRepository;
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final CandidateRepositoryCustom candidateRepositoryCustom;
     private final KafkaTemplate<String, JobApplicationEvent> kafkaTemplate;
     // Cache keys
     private static final String ALL_CANDIDATES_CACHE = "all_candidates";
@@ -44,6 +46,8 @@ public class CandidateService {
     private static final String CANDIDATE_BY_ID_CACHE = "candidate_";
     private static final String CANDIDATE_BY_EMAIL_CACHE = "candidate_email_";
     private static final String JOB_APPLICATIONS_CACHE = "job_applications";
+    private static final String CANDIDATES_FILTERED_CACHE = "filtered_candidates";
+    private static final String CANDIDATES_FILTERED_COUNT_CACHE = "filtered_candidates_count";
 
     @CacheEvict(value = {ALL_CANDIDATES_CACHE, JOB_APPLICATIONS_CACHE}, allEntries = true)
     public Candidate applyForJob(CandidateApplicationDto applicationDto) throws IOException {
@@ -180,5 +184,24 @@ public class CandidateService {
         application.setStage("Waiting for response");
         jobApplicationRepository.save(application);
     }
+    @Cacheable(value = CANDIDATES_FILTERED_CACHE,
+            key = "{#filters.hashCode(), #pageable.pageNumber, #pageable.pageSize}")
+    public List<Candidate> getFilteredCandidatesList(CandidateFilterDTO filters, Pageable pageable) {
+        Page<Candidate> page = candidateRepositoryCustom.findWithFilters(filters, pageable);
+        if (page.isEmpty()) {
+            throw new ResourceNotFoundException("No candidates found matching the criteria");
+        }
+        return page.getContent();
+    }
 
+    @Cacheable(value = CANDIDATES_FILTERED_COUNT_CACHE, key = "#filters.hashCode()")
+    public long getFilteredCandidatesCount(CandidateFilterDTO filters) {
+        return candidateRepositoryCustom.countWithFilters(filters);
+    }
+
+    public Page<Candidate> getFilteredCandidates(CandidateFilterDTO filters, Pageable pageable) {
+        List<Candidate> content = getFilteredCandidatesList(filters, pageable);
+        long totalCount = getFilteredCandidatesCount(filters);
+        return new PageImpl<>(content, pageable, totalCount);
+    }
 }

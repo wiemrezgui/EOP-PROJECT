@@ -4,6 +4,7 @@ import com.EOP.common_lib.common.DTO.ApiResponse;
 import com.EOP.common_lib.common.annotation.RequireDepartmentPermission;
 import com.EOP.common_lib.common.enums.Role;
 import com.EOP.jobs_service.DTOs.JobDTO;
+import com.EOP.jobs_service.DTOs.JobFilterDTO;
 import com.EOP.jobs_service.models.Job;
 import com.EOP.jobs_service.enums.JobStatus;
 import com.EOP.jobs_service.services.JobService;
@@ -126,5 +127,16 @@ public class JobController {
                 jobs,"Jobs retrieved successfully"
         );
         return ResponseEntity.ok(apiResponse);
+    }
+    @Operation(summary = "Get filtered jobs")
+    @RequireDepartmentPermission(service = "jobs", action = "read")
+    @PostMapping("/filter")
+    public ResponseEntity<ApiResponse<Page<Job>>> filterJobs(
+            @RequestBody JobFilterDTO filters,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "15") int size) {
+
+        Page<Job> result = jobService.getFilteredJobs(filters, PageRequest.of(page, size));
+        return ResponseEntity.ok(ApiResponse.success(result, "Jobs filtered successfully"));
     }
 }

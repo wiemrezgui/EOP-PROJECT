@@ -3,6 +3,7 @@ package com.EOP.jobs_service.controllers;
 import com.EOP.common_lib.common.DTO.ApiResponse;
 import com.EOP.common_lib.common.annotation.RequireDepartmentPermission;
 import com.EOP.jobs_service.DTOs.CandidateApplicationDto;
+import com.EOP.jobs_service.DTOs.CandidateFilterDTO;
 import com.EOP.jobs_service.DTOs.CandidateResponse;
 import com.EOP.jobs_service.exceptions.InvalidRequestException;
 import com.EOP.jobs_service.models.Candidate;
@@ -170,6 +171,16 @@ public class CandidateController {
                 "All applicants for the job retrieved successfully"
         );
         return ResponseEntity.ok(apiResponse);
+    }
+    @Operation(summary = "Get filtered candidates")
+    @PostMapping("/filter")
+    public ResponseEntity<ApiResponse<Page<Candidate>>> filterCandidates(
+            @RequestBody CandidateFilterDTO filters,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "15") int size) {
+
+        Page<Candidate> result = candidateService.getFilteredCandidates(filters, PageRequest.of(page, size));
+        return ResponseEntity.ok(ApiResponse.success(result, "Candidates filtered successfully"));
     }
     private void validateResumeFile(MultipartFile file) {
         if (file.getSize() > 5 * 1024 * 1024) {
