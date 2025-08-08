@@ -199,4 +199,11 @@ public class CandidateController {
             throw new InvalidRequestException("Resume filename cannot be empty");
         }
     }
+    @Operation(summary = "Check candidate existance")
+    @GetMapping("/check-candidate/{candidateID}")
+    public ResponseEntity<ApiResponse<Boolean>> checkCandidate(
+            @PathVariable Long candidateID) {
+        Boolean response=this.candidateService.checkCandidateExists(candidateID);
+        return ResponseEntity.ok(ApiResponse.success(response, "Candidate retrieved successfully"));
+    }
 }

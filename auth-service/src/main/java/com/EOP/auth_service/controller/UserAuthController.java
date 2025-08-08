@@ -1,7 +1,7 @@
 package com.EOP.auth_service.controller;
 
 import com.EOP.auth_service.DTOs.*;
-import com.EOP.auth_service.service.UserAuthServiceImpl;
+import com.EOP.auth_service.service.UserAuthService;
 import com.EOP.common_lib.common.DTO.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,9 +21,9 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "User auth", description = "User auth apis")
 public class UserAuthController {
 
-    private final UserAuthServiceImpl userAuthService;
+    private final UserAuthService userAuthService;
 
-    public UserAuthController(UserAuthServiceImpl userAuthService) {
+    public UserAuthController(UserAuthService userAuthService) {
         this.userAuthService = userAuthService;
     }
     @Operation(summary = "Test service")
@@ -106,5 +106,12 @@ public class UserAuthController {
         );
 
         return ResponseEntity.ok(response);
+    }
+    @Operation(summary = "Check user existance")
+    @GetMapping("/check-user/{userUUID}")
+    public ResponseEntity<ApiResponse<Boolean>> checkUser(
+            @PathVariable String userUUID) {
+        Boolean response=this.userAuthService.checkUserExists(userUUID);
+        return ResponseEntity.ok(ApiResponse.success(response, "User retrieved successfully"));
     }
 }

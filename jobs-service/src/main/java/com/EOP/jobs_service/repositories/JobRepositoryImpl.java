@@ -123,7 +123,6 @@ public class JobRepositoryImpl implements JobRepositoryCustom {
         }
 
         if (filters.getRequiredSkills() != null && !filters.getRequiredSkills().isEmpty()) {
-            // Use jsonb_exists_any for better PostgreSQL array handling
             for (String skill : filters.getRequiredSkills()) {
                 predicates.add(cb.isTrue(
                         cb.function("jsonb_exists", Boolean.class,

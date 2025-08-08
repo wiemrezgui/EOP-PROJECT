@@ -23,7 +23,6 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
@@ -203,5 +202,8 @@ public class CandidateService {
         List<Candidate> content = getFilteredCandidatesList(filters, pageable);
         long totalCount = getFilteredCandidatesCount(filters);
         return new PageImpl<>(content, pageable, totalCount);
+    }
+    public boolean checkCandidateExists(Long candidateId) {
+        return candidateRepository.existsById(candidateId);
     }
 }

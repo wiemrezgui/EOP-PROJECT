@@ -26,7 +26,7 @@ import java.util.*;
 @Service
 @AllArgsConstructor
 @Slf4j
-public class UserAuthServiceImpl {
+public class UserAuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
     private final UserDetailsService userDetailsService;
@@ -334,6 +334,8 @@ public class UserAuthServiceImpl {
 
         return token;
     }
-
+    public boolean checkUserExists(String userUUID) {
+        return userRepository.existsById(userUUID);
+    }
 }
 
