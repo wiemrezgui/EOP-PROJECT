@@ -43,6 +43,7 @@ public class Interview {
     @Enumerated(EnumType.STRING)
     private InterviewStatus status;
 
+    private Integer durationMinutes = 15;
     @Email
     private String userEmail;
     private Long candidateID;

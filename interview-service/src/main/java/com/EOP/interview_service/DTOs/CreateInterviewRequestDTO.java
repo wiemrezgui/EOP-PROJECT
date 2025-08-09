@@ -2,6 +2,8 @@ package com.EOP.interview_service.DTOs;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,7 +26,9 @@ public class CreateInterviewRequestDTO {
     private String description;
     @NotNull
     private Long candidateID;
-
+    @Min(15)
+    @Max(90)
+    private Integer durationMinutes = 15;
     @NotNull @Email
     private String userEmail;
     private Long JobID;
