@@ -97,20 +97,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
-    @ExceptionHandler(IOException.class)
-    public ResponseEntity<ApiResponse<Void>> handleIOException(
-            IOException ex, HttpServletRequest request) {
-        log.error("File processing error: {}", ex.getMessage(), ex);
-
-        ApiResponse<Void> response = ApiResponse.error(
-                "File processing failed. Please check your file and try again.",
-                HttpStatus.BAD_REQUEST.value(),
-                request.getRequestURI()
-        );
-
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-    }
-
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleGenericException(
             Exception ex, HttpServletRequest request) {

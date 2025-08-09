@@ -334,8 +334,9 @@ public class UserAuthService {
 
         return token;
     }
-    public boolean checkUserExists(String userUUID) {
-        return userRepository.existsById(userUUID);
+    public boolean checkUserExists(String userEmail) {
+        Optional<User> existingUser = userRepository.findByEmail(userEmail.trim().toLowerCase());
+        return existingUser.isPresent();
     }
 }
 

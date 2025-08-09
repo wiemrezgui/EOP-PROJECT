@@ -7,10 +7,12 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -21,6 +23,7 @@ import java.time.LocalTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@RestController
 public class Interview {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,6 +42,10 @@ public class Interview {
 
     @Enumerated(EnumType.STRING)
     private InterviewStatus status;
-    private String userUUID;
-    private long candidateID;
+
+    @Email
+    private String userEmail;
+    private Long candidateID;
+    private Long JobID;
+
 }

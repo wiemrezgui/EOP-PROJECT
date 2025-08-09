@@ -56,7 +56,8 @@ public class JobsSecurityConfig {
                         .requestMatchers("/api/jobs/candidates/apply").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/test/**").permitAll()
-
+                        .requestMatchers("/api/jobs/**").authenticated()  // Working path
+                        .requestMatchers("/api/job-application/**").authenticated()
                         // All other API endpoints require authentication
                         .anyRequest().authenticated()
                 )

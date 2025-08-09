@@ -8,10 +8,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
-
+@Repository
 public interface JobApplicationRepository extends JpaRepository<JobApplication, Long> {
     boolean existsByCandidateEmailAndJobId(String email, Long jobId);
+
+    @Query("SELECT COUNT(ja) > 0 FROM JobApplication ja WHERE ja.candidate.id = :candidateId AND ja.job.id = :jobId")
+    boolean existsByCandidateIdAndJobId(@Param("candidateId") Long candidateId, @Param("jobId") Long jobId);
+
     @Query("SELECT ja.candidate " +  // Fetch the entire candidate entity
             "FROM JobApplication ja " +
             "WHERE ja.job.id = :jobId")

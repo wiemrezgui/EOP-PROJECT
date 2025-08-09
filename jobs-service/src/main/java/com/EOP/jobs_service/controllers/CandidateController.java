@@ -201,9 +201,8 @@ public class CandidateController {
     }
     @Operation(summary = "Check candidate existance")
     @GetMapping("/check-candidate/{candidateID}")
-    public ResponseEntity<ApiResponse<Boolean>> checkCandidate(
+    public Boolean checkCandidate(
             @PathVariable Long candidateID) {
-        Boolean response=this.candidateService.checkCandidateExists(candidateID);
-        return ResponseEntity.ok(ApiResponse.success(response, "Candidate retrieved successfully"));
+        return this.candidateService.checkCandidateExists(candidateID);
     }
 }

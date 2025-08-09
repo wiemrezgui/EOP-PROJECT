@@ -129,7 +129,6 @@ public class InterviewSecurityConfig {
                     path.startsWith("/swagger-resources") ||
                     path.startsWith("/webjars") ||
                     path.startsWith("/actuator/health") ||
-                    path.equals("/api/jobs/candidates/apply") ||
                     path.equals("/favicon.ico");
         }
     }

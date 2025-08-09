@@ -139,4 +139,6 @@ public class JobController {
         Page<Job> result = jobService.getFilteredJobs(filters, PageRequest.of(page, size));
         return ResponseEntity.ok(ApiResponse.success(result, "Jobs filtered successfully"));
     }
+
+
 }

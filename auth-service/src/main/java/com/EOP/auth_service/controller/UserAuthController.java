@@ -77,41 +77,5 @@ public class UserAuthController {
 
         return ResponseEntity.ok(response);
     }
-    @Operation(summary = "Add user by admin")
-    @PostMapping("/add-user")
-    public ResponseEntity<ApiResponse<UserResponseDTO>> addUser(
-            @RequestBody @Valid UserDTO data) {
 
-        log.info("Creating new user account for email: {}", data.getEmail());
-
-        UserResponseDTO userResponse = userAuthService.addUser(data);
-        ApiResponse<UserResponseDTO> response = ApiResponse.success(
-                userResponse,
-                "Account created successfully. Please check your email to verify your account."
-        );
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
-    @Operation(summary = "Verify account")
-    @GetMapping("/verify-account/{email}")
-    public ResponseEntity<ApiResponse<String>> verifyAccount(
-            @PathVariable @Email(message = "Please provide a valid email address") String email) {
-
-        log.info("Verifying account for email: {}", email);
-
-        userAuthService.verifyAccount(email);
-        ApiResponse<String> response = ApiResponse.success(
-                null,
-                "Account verified successfully"
-        );
-
-        return ResponseEntity.ok(response);
-    }
-    @Operation(summary = "Check user existance")
-    @GetMapping("/check-user/{userUUID}")
-    public ResponseEntity<ApiResponse<Boolean>> checkUser(
-            @PathVariable String userUUID) {
-        Boolean response=this.userAuthService.checkUserExists(userUUID);
-        return ResponseEntity.ok(ApiResponse.success(response, "User retrieved successfully"));
-    }
 }

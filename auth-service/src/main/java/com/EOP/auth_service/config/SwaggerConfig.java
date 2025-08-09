@@ -32,7 +32,7 @@ public class SwaggerConfig {
     public GroupedOpenApi publicApi() {
         return GroupedOpenApi.builder()
                 .group("public-apis")
-                .pathsToMatch("/api/auth/login", "/api/auth/verify-account/**")
+                .pathsToMatch("/api/auth/login", "/api/user/verify-account/**")
                 .build();
     }
 
