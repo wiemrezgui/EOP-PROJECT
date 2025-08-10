@@ -2,6 +2,7 @@ package com.EOP.interview_service.services;
 
 import com.EOP.common_lib.common.exceptions.ResourceNotFoundException;
 import com.EOP.interview_service.DTOs.CreateInterviewRequestDTO;
+import com.EOP.interview_service.DTOs.InterviewFilterDTO;
 import com.EOP.interview_service.DTOs.InterviewRequestDTO;
 import com.EOP.interview_service.DTOs.MeetingDetailsDTO;
 import com.EOP.interview_service.clients.AuthServiceClient;
@@ -11,6 +12,7 @@ import com.EOP.interview_service.enums.InterviewStatus;
 import com.EOP.interview_service.exceptions.InvalidRequestException;
 import com.EOP.interview_service.models.Interview;
 import com.EOP.interview_service.repositories.InterviewRepository;
+import com.EOP.interview_service.repositories.InterviewRepositoryImpl;
 import io.micrometer.common.util.StringUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +28,7 @@ import org.springframework.stereotype.Service;
 import javax.naming.ServiceUnavailableException;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.chrono.ChronoLocalDate;
 import java.util.List;
 @Slf4j
 @Service
@@ -35,6 +38,8 @@ public class InterviewService {
     private final JobsServiceClient jobsClient;
     private final InterviewRepository interviewRepository;
     private final GoogleMeetService googleMeetService;
+    private final InterviewRepositoryImpl interviewRepositoryImpl;
+
     //cache keys
     public static final String INTERVIEWS_LIST_CACHE = "interviews-list";
     public static final String INTERVIEWS_COUNT_CACHE = "interviews-count";
@@ -42,13 +47,14 @@ public class InterviewService {
     public static final String INTERVIEWS_BY_CANDIDATE_CACHE = "interviews_by_candidate";
     public static final String INTERVIEWS_BY_STATUS_CACHE = "interviews_by_status";
     public static final String INTERVIEWS_BY_MODE_CACHE = "interviews_by_mode";
-
+    public static final String FILTERED_INTERVIEWS = "filtered_interviews";
 
     @CacheEvict(value = {INTERVIEWS_LIST_CACHE, INTERVIEWS_COUNT_CACHE, INTERVIEWS_BY_CANDIDATE_CACHE, INTERVIEWS_BY_STATUS_CACHE,INTERVIEWS_BY_MODE_CACHE}, allEntries = true)
     @Transactional
     public Interview createInterview(CreateInterviewRequestDTO request) throws ServiceUnavailableException {
         validateExistance(request.getCandidateID(), request.getUserEmail(),request.getJobID());
         validateInterviewMode(request);
+        validateInterviewDate(request);
         Interview interview = new Interview();
         interview.setScheduledDate(request.getScheduledDate());
         interview.setScheduledTime(request.getScheduledTime());
@@ -232,7 +238,11 @@ public class InterviewService {
             }
         }
     }
-
+    private void validateInterviewDate(CreateInterviewRequestDTO request) {
+        if (request.getScheduledDate().isBefore(ChronoLocalDate.from(LocalDateTime.now()))) {
+            throw new IllegalArgumentException("Interview date must be in the future");
+        }
+    }
     private void handleOnlineInterview(Interview interview) throws ServiceUnavailableException {
         try {
             String meetingLink = generateGoogleMeetLink(interview);
@@ -244,5 +254,11 @@ public class InterviewService {
             throw new ServiceUnavailableException("Failed to generate meeting link. Please try again later.");
         }
     }
-
+    public Page<Interview> getFilteredInterviews(InterviewFilterDTO filters, Pageable pageable) {
+        Page<Interview> interviews = interviewRepositoryImpl.findWithFilters(filters, pageable);
+        if (interviews.isEmpty()) {
+            throw new ResourceNotFoundException("No interviews found");
+        }
+        return interviews;
+    }
 }

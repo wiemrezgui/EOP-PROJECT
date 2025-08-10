@@ -2,6 +2,7 @@ package com.EOP.interview_service.controllers;
 
 import com.EOP.common_lib.common.DTO.ApiResponse;
 import com.EOP.interview_service.DTOs.CreateInterviewRequestDTO;
+import com.EOP.interview_service.DTOs.InterviewFilterDTO;
 import com.EOP.interview_service.DTOs.InterviewRequestDTO;
 import com.EOP.interview_service.enums.InterviewMode;
 import com.EOP.interview_service.enums.InterviewStatus;
@@ -149,6 +150,28 @@ public class InterviewController {
         ApiResponse<Page<Interview>> apiResponse = ApiResponse.success(
                 interviews,
                 "Candidate interviews retrieved successfully"
+        );
+
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    @Operation(summary = "Filter interviews", description = "Retrieve filtered interviews")
+    @PostMapping("/filter")
+    public ResponseEntity<ApiResponse<Page<Interview>>> getFilteredInterviews(
+            @RequestBody InterviewFilterDTO request,
+
+            @Parameter(description = "Page number (0-based)", example = "0")
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+
+            @Parameter(description = "Items per page", example = "15")
+            @RequestParam(defaultValue = "15") @Min(1) @Max(100) int size) {
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Interview> interviews = interviewService.getFilteredInterviews(request, pageable);
+
+        ApiResponse<Page<Interview>> apiResponse = ApiResponse.success(
+                interviews,
+                "Filtered interviews retrieved successfully"
         );
 
         return ResponseEntity.ok(apiResponse);
