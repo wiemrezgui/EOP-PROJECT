@@ -118,6 +118,16 @@ public class CandidateController {
         return ResponseEntity.ok(apiResponse);
     }
 
+    @Operation(summary = "Get candidate Email by ID")
+    @GetMapping("/get-email-by-id/{id}")
+    @RequireDepartmentPermission(service = "candidates", action = "read-by-id")
+    public String getCandidateEmailByID(
+            @Parameter(description = "Candidate ID", example = "1")
+            @PathVariable Long id) {
+
+        return this.candidateService.getCandidateEmailById(id);
+    }
+
     @Operation(summary = "Get candidate by email", description = "Retrieve a candidate by their email address")
     @GetMapping("/email/{email}")
     @RequireDepartmentPermission(service = "candidates", action = "read-by-email")

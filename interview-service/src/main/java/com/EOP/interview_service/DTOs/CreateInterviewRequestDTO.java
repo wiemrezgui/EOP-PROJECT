@@ -1,6 +1,9 @@
 package com.EOP.interview_service.DTOs;
 
+import com.EOP.interview_service.enums.InterviewMode;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -24,6 +27,10 @@ public class CreateInterviewRequestDTO {
     private LocalTime scheduledTime;
 
     private String description;
+    private String meetingTitle;
+    private String location;
+    @Enumerated(EnumType.STRING)
+    private InterviewMode mode;
     @NotNull
     private Long candidateID;
     @Min(15)

@@ -206,4 +206,8 @@ public class CandidateService {
     public boolean checkCandidateExists(Long candidateId) {
         return candidateRepository.existsById(candidateId);
     }
+    public String getCandidateEmailById(Long candidateId) {
+        Candidate candidate = getCandidateById(candidateId);
+        return candidate.getEmail();
+    }
 }

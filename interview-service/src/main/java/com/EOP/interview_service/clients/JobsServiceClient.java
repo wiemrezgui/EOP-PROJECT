@@ -1,7 +1,9 @@
 package com.EOP.interview_service.clients;
 
+import com.EOP.common_lib.common.DTO.ApiResponse;
 import com.EOP.interview_service.config.FeignClientConfig;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
@@ -20,4 +22,6 @@ public interface JobsServiceClient {
             @PathVariable Long jobId,
             @PathVariable Long candidateId
     );
+    @GetMapping("/api/jobs/candidates/get-email-by-id/{id}")
+    String getCandidateEmailById(@PathVariable Long id);
 }

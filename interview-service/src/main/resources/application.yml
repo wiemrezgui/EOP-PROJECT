@@ -30,7 +30,11 @@ jwt:
 auth:
   service:
     url: http://localhost:8081  # Auth service port
-
 jobs:
   service:
     url: http://localhost:8082  # jobs service port
+google:
+  credentials:
+    file-path: classpath:credentials/client_secret.json
+  calendar:
+    application-name: "Interview Service"

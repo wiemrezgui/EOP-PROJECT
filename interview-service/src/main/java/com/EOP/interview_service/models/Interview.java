@@ -1,5 +1,6 @@
 package com.EOP.interview_service.models;
 
+import com.EOP.interview_service.enums.InterviewMode;
 import com.EOP.interview_service.enums.InterviewStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -39,7 +40,10 @@ public class Interview {
     private String feedback;
     private String description;
     private String meetingLink;
-
+    private String meetingTitle;
+    private String location;
+    @Enumerated(EnumType.STRING)
+    private InterviewMode mode;
     @Enumerated(EnumType.STRING)
     private InterviewStatus status;
 

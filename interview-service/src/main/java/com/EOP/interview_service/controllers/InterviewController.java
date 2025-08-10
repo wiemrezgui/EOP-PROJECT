@@ -3,6 +3,7 @@ package com.EOP.interview_service.controllers;
 import com.EOP.common_lib.common.DTO.ApiResponse;
 import com.EOP.interview_service.DTOs.CreateInterviewRequestDTO;
 import com.EOP.interview_service.DTOs.InterviewRequestDTO;
+import com.EOP.interview_service.enums.InterviewMode;
 import com.EOP.interview_service.enums.InterviewStatus;
 import com.EOP.interview_service.models.Interview;
 import com.EOP.interview_service.services.InterviewService;
@@ -22,6 +23,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.naming.ServiceUnavailableException;
+
 @RestController
 @RequestMapping("/api/interview")
 @RequiredArgsConstructor
@@ -34,7 +37,7 @@ public class InterviewController {
     @Operation(summary = "Schedule a new interview", description = "Create and schedule a new interview")
     @PostMapping
     public ResponseEntity<ApiResponse<Interview>> createInterview(
-            @RequestBody @Valid CreateInterviewRequestDTO request) {
+            @RequestBody @Valid CreateInterviewRequestDTO request) throws ServiceUnavailableException {
 
         log.info("Creating new interview for candidate: {}", request.getCandidateID());
 
@@ -119,6 +122,29 @@ public class InterviewController {
 
         Pageable pageable = PageRequest.of(page, size);
         Page<Interview> interviews = interviewService.getInterviewsByStatus(InterviewStatus.valueOf(status.toUpperCase()), pageable);
+
+        ApiResponse<Page<Interview>> apiResponse = ApiResponse.success(
+                interviews,
+                "Candidate interviews retrieved successfully"
+        );
+
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    @Operation(summary = "Get interviews by mode", description = "Retrieve paginated interviews for a specific mode")
+    @GetMapping("/mode/{mode}")
+    public ResponseEntity<ApiResponse<Page<Interview>>> getInterviewsByMode(
+            @Parameter(description = "Mode", example = "IN_PERSON")
+            @PathVariable String mode,
+
+            @Parameter(description = "Page number (0-based)", example = "0")
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+
+            @Parameter(description = "Items per page", example = "15")
+            @RequestParam(defaultValue = "15") @Min(1) @Max(100) int size) {
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Interview> interviews = interviewService.getInterviewsByMode(InterviewMode.valueOf(mode.toUpperCase()), pageable);
 
         ApiResponse<Page<Interview>> apiResponse = ApiResponse.success(
                 interviews,
