@@ -137,4 +137,8 @@ public class JobService {
         long totalCount = getFilteredJobsCount(filters);
         return new PageImpl<>(content, pageable, totalCount);
     }
+    public String getJobTitleById(Long id) {
+        Job job = getJobById(id);
+        return job.getTitle();
+    }
 }

@@ -8,7 +8,7 @@ import com.EOP.auth_service.repository.UserAuthRepository;
 import com.EOP.common_lib.common.enums.Department;
 import com.EOP.common_lib.common.enums.Role;
 import com.EOP.common_lib.common.exceptions.ResourceNotFoundException;
-import events.AccountCreatedEvent;
+import com.EOP.common_lib.events.AccountCreatedEvent;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

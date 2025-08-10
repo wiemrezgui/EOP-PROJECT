@@ -1,13 +1,16 @@
 package com.EOP.interview_service.services;
 
+import com.EOP.common_lib.common.enums.InterviewMode;
 import com.EOP.common_lib.common.exceptions.ResourceNotFoundException;
+import com.EOP.common_lib.events.InterviewCancelledEvent;
+import com.EOP.common_lib.events.InterviewCreatedEvent;
+import com.EOP.common_lib.events.InterviewUpdatedEvent;
 import com.EOP.interview_service.DTOs.CreateInterviewRequestDTO;
 import com.EOP.interview_service.DTOs.InterviewFilterDTO;
 import com.EOP.interview_service.DTOs.InterviewRequestDTO;
 import com.EOP.interview_service.DTOs.MeetingDetailsDTO;
 import com.EOP.interview_service.clients.AuthServiceClient;
 import com.EOP.interview_service.clients.JobsServiceClient;
-import com.EOP.interview_service.enums.InterviewMode;
 import com.EOP.interview_service.enums.InterviewStatus;
 import com.EOP.interview_service.exceptions.InvalidRequestException;
 import com.EOP.interview_service.models.Interview;
@@ -23,10 +26,10 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.naming.ServiceUnavailableException;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.chrono.ChronoLocalDate;
 import java.util.List;
@@ -39,6 +42,7 @@ public class InterviewService {
     private final InterviewRepository interviewRepository;
     private final GoogleMeetService googleMeetService;
     private final InterviewRepositoryImpl interviewRepositoryImpl;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     //cache keys
     public static final String INTERVIEWS_LIST_CACHE = "interviews-list";
@@ -47,7 +51,6 @@ public class InterviewService {
     public static final String INTERVIEWS_BY_CANDIDATE_CACHE = "interviews_by_candidate";
     public static final String INTERVIEWS_BY_STATUS_CACHE = "interviews_by_status";
     public static final String INTERVIEWS_BY_MODE_CACHE = "interviews_by_mode";
-    public static final String FILTERED_INTERVIEWS = "filtered_interviews";
 
     @CacheEvict(value = {INTERVIEWS_LIST_CACHE, INTERVIEWS_COUNT_CACHE, INTERVIEWS_BY_CANDIDATE_CACHE, INTERVIEWS_BY_STATUS_CACHE,INTERVIEWS_BY_MODE_CACHE}, allEntries = true)
     @Transactional
@@ -71,8 +74,39 @@ public class InterviewService {
             interview.setLocation(request.getLocation());
             interview.setMeetingLink(null); // Clear link if exists
         }
-        return interviewRepository.save(interview);
+        Interview addedInterview= interviewRepository.save(interview);
+        sendInterviewCreatedEvent(addedInterview);
+        return addedInterview;
     }
+
+    private void sendInterviewCreatedEvent(Interview interview) {
+        try {
+            log.info("Starting to send interview event ");
+
+            String jobTitle=this.getJobTitle(interview.getJobID());
+            String candidateEmail=this.jobsClient.getCandidateEmailById(interview.getCandidateID());
+            InterviewCreatedEvent event = new InterviewCreatedEvent(
+                    interview.getUserEmail(),
+                    jobTitle,
+                    interview.getMeetingTitle(),
+                    interview.getScheduledDate(),
+                    interview.getScheduledTime(),
+                    interview.getMode(),
+                    interview.getLocation(),
+                    interview.getMeetingLink(),
+                    interview.getDescription(),
+                    candidateEmail,
+                    interview.getDurationMinutes()
+            );
+
+            log.info("Created event: {}", event);
+            kafkaTemplate.send("interview-created", event);
+            log.info("Message sent to Kafka topic: interview-created");
+        } catch (Exception e) {
+            log.error("Error creating interview event", e);
+        }
+    }
+
     @Cacheable(value = INTERVIEWS_LIST_CACHE, key = "'page:' + #pageable.pageNumber + ':size:' + #pageable.pageSize")
     public List<Interview> getInterviewsList(Pageable pageable) {
         Page<Interview> page = interviewRepository.findAll(pageable);
@@ -164,14 +198,56 @@ public class InterviewService {
     @CacheEvict(value = {INTERVIEWS_LIST_CACHE, INTERVIEWS_BY_CANDIDATE_CACHE, INTERVIEWS_BY_STATUS_CACHE,INTERVIEWS_BY_MODE_CACHE}, allEntries = true)
     @CachePut(value = INTERVIEW_BY_ID_CACHE, key = "#id")
     @Transactional
-    public Interview updateInterview(Long id, InterviewRequestDTO request) {
+    public Interview updateInterview(Long id, InterviewRequestDTO request) throws ServiceUnavailableException {
         Interview interview = getInterviewById(id);
+        // Track changes for notification
+        boolean timeChanged = !interview.getScheduledDate().equals(request.getScheduledDate()) ||
+                !interview.getScheduledTime().equals(request.getScheduledTime());
+        boolean modeChanged = interview.getMode() != request.getMode();
+        boolean locationChanged = !interview.getLocation().equals(request.getLocation());
         interview.setScheduledDate(request.getScheduledDate());
         interview.setScheduledTime(request.getScheduledTime());
+        interview.setMode(request.getMode());
+        if (request.getMode() == InterviewMode.ONLINE) {
+            handleOnlineInterview(interview);
+        } else { // PRESENTIAL
+            interview.setLocation(request.getLocation());
+            interview.setMeetingLink(null); // Clear link if exists
+        }
+        interview.setDurationMinutes(request.getDurationMinutes());
         interview.setDescription(request.getDescription());
-        return interviewRepository.save(interview);
+        Interview updatedInterview = interviewRepository.save(interview);
+        sendInterviewUpdatedEvent(updatedInterview, timeChanged, modeChanged,locationChanged);
+        return updatedInterview;
     }
+    private void sendInterviewUpdatedEvent(Interview interview, boolean timeChanged, boolean modeChanged,boolean locationChanged) {
+        try {
+            String jobTitle = jobsClient.getJobTitleById(interview.getJobID());
+            String candidateEmail = jobsClient.getCandidateEmailById(interview.getCandidateID());
 
+            InterviewUpdatedEvent event = InterviewUpdatedEvent.builder()
+                    .interviewerEmail(interview.getUserEmail())
+                    .candidateEmail(candidateEmail)
+                    .jobTitle(jobTitle)
+                    .previousDate(interview.getScheduledDate())
+                    .previousTime(interview.getScheduledTime())
+                    .newDate(interview.getScheduledDate())
+                    .newTime(interview.getScheduledTime())
+                    .mode(interview.getMode())
+                    .location(interview.getLocation())
+                    .meetingLink(interview.getMeetingLink())
+                    .description(interview.getDescription())
+                    .timeChanged(timeChanged)
+                    .modeChanged(modeChanged)
+                    .locationChanged(locationChanged)
+                    .build();
+
+            kafkaTemplate.send("interview-updated", event);
+            log.info("Sent interview updated event for interview ID: {}", interview.getId());
+        } catch (Exception e) {
+            log.error("Failed to send interview updated event", e);
+        }
+    }
     @CacheEvict(value = {INTERVIEWS_LIST_CACHE, INTERVIEWS_BY_STATUS_CACHE}, allEntries = true)
     @CachePut(value = INTERVIEW_BY_ID_CACHE, key = "#id")
     @Transactional
@@ -188,11 +264,35 @@ public class InterviewService {
         interview.setFeedback(feedback);
         return interviewRepository.save(interview);
     }
-    public void deleteInterview(Long id) {
+    public void cancelInterview(Long id,String cancellationReason) {
         if (!interviewRepository.existsById(id)) {
             throw new ResourceNotFoundException("Interview not found with id: " + id);
         }
-        interviewRepository.deleteById(id);
+        Interview interview = getInterviewById(id);
+        interview.setStatus(InterviewStatus.CANCELLED);
+        interviewRepository.save(interview);
+
+        sendInterviewCancelledEvent(interview, cancellationReason);
+    }
+    private void sendInterviewCancelledEvent(Interview interview, String cancellationReason) {
+        try {
+            String jobTitle = jobsClient.getJobTitleById(interview.getJobID());
+            String candidateEmail = jobsClient.getCandidateEmailById(interview.getCandidateID());
+
+            InterviewCancelledEvent event = InterviewCancelledEvent.builder()
+                    .interviewerEmail(interview.getUserEmail())
+                    .candidateEmail(candidateEmail)
+                    .jobTitle(jobTitle)
+                    .scheduledDate(interview.getScheduledDate())
+                    .scheduledTime(interview.getScheduledTime())
+                    .cancellationReason(cancellationReason)
+                    .build();
+
+            kafkaTemplate.send("interview-cancelled", event);
+            log.info("Sent interview cancelled event for interview ID: {}", interview.getId());
+        } catch (Exception e) {
+            log.error("Failed to send interview cancelled event", e);
+        }
     }
     private void validateExistance(Long candidateId, String userEmail,Long jobId) {
         if (!jobsClient.checkCandidateExists(candidateId)) {
@@ -260,5 +360,8 @@ public class InterviewService {
             throw new ResourceNotFoundException("No interviews found");
         }
         return interviews;
+    }
+    public String getJobTitle(Long id) {
+        return  this.jobsClient.getJobTitleById(id);
     }
 }

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Interview Updated</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .logo {
+      max-width: 150px;
+      height: auto;
+    }
+    .content {
+      background-color: #f9f9f9;
+      padding: 20px;
+      border-radius: 5px;
+    }
+    .title {
+      color: #0c587d;
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+    .details {
+      margin: 20px 0;
+    }
+    .detail-row {
+      margin-bottom: 10px;
+    }
+    .detail-label {
+      font-weight: bold;
+      display: inline-block;
+      width: 120px;
+    }
+    .action-button {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #0c587d;
+      color: white !important;
+      text-decoration: none;
+      border-radius: 4px;
+      margin-top: 15px;
+    }
+    .footer {
+      margin-top: 30px;
+      font-size: 12px;
+      text-align: center;
+      color: #777;
+    }
+    .meeting-link {
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+<div class="header">
+  <img src="cid:logo" alt="Company Logo" class="logo">
+  <h2>Interview Update Notification</h2>
+</div>
+<div class="content">
+  <div class="title">For: ${jobTitle}</div>
+
+  <div class="details">
+    <div class="detail-row">
+      <span class="detail-label">${otherPartyLabel}</span>
+      <span>${otherParty}</span>
+    </div>
+
+    ${timeChanged == 'true' ? '
+    <div class="detail-row">
+      <span class="detail-label">Previous Time:</span>
+      <span>${previousDate} at ${previousTime}</span>
+    </div>
+    ' : ''}
+
+    <div class="detail-row">
+      <span class="detail-label">${timeChanged == 'true' ? 'New Time:' : 'Time:'}</span>
+      <span>${newDate} at ${newTime}</span>
+    </div>
+
+    ${modeChanged == 'true' ? '
+    <div class="detail-row">
+      <span class="detail-label">New Mode:</span>
+      <span>${mode}</span>
+    </div>
+    ' : ''}
+
+    ${mode == 'ONLINE' ? '
+    <div class="detail-row">
+      <span class="detail-label">Meeting Link:</span>
+      <span class="meeting-link">
+                <a href="${meetingLink}">${meetingLink}</a>
+            </span>
+    </div>
+    ' : ''}
+
+    ${mode == 'IN_PERSON' ? '
+    <div class="detail-row">
+      <span class="detail-label">Location:</span>
+      <span>${location}</span>
+    </div>
+    ' : ''}
+
+    ${description ? '
+    <div class="detail-row">
+      <span class="detail-label">Details:</span>
+      <span>${description}</span>
+    </div>
+    ' : ''}
+  </div>
+
+  <div class="footer">
+    <p>If you have any questions, please contact ${isInterviewer == 'true' ?
+      'the recruitment team' : 'your recruiter'}.</p>
+    <p>© 2025 EOP. All rights reserved.</p>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Interview Scheduled</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            max-width: 150px;
+            height: auto;
+        }
+        .content {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        .title {
+            color: #0c587d;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .details {
+            margin: 20px 0;
+        }
+        .detail-row {
+            margin-bottom: 10px;
+        }
+        .detail-label {
+            font-weight: bold;
+            display: inline-block;
+            width: 120px;
+        }
+        .action-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #0c587d;
+            color: white !important;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-top: 15px;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            text-align: center;
+            color: #777;
+        }
+        .meeting-link {
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <img src="cid:logo" alt="Company Logo" class="logo">
+    <h2>${isInterviewer == 'true' ? 'Interview Scheduled' : 'Your Interview Scheduled'}</h2>
+</div>
+<div class="content">
+    <div class="title">For: ${jobTitle}</div>
+
+    <div class="details">
+        <div class="detail-row">
+            <span class="detail-label">${otherPartyLabel}</span>
+            <span>${otherParty}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Date:</span>
+            <span>${scheduledDate}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Time:</span>
+            <span>${scheduledTime}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Duration:</span>
+            <span>${duration} minutes</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Mode:</span>
+            <span>${mode}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Location:</span>
+            <span>${location}</span>
+        </div>
+        ${mode == 'ONLINE' ? '
+        <div class="detail-row">
+            <span class="detail-label">Meeting Link:</span>
+            <span class="meeting-link">
+                <a href="${meetingLink}">${meetingLink}</a>
+            </span>
+        </div>
+        ' : ''}
+        ${description ? '
+        <div class="detail-row">
+            <span class="detail-label">Details:</span>
+            <span>${description}</span>
+        </div>
+        ' : ''}
+    </div>
+
+    ${mode == 'ONLINE' ? '
+    <div>
+        <p>${isInterviewer == 'true' ? 'The candidate will join using the link above.' : 'Please join using the link above at the scheduled time.'}</p>
+        <a href="${meetingLink}" class="action-button">${isInterviewer == 'true' ? 'Start Meeting' : 'Join Meeting'}</a>
+    </div>
+    ' : ''}
+    ${mode == 'IN_PERSON' ? '
+    <div>
+        <p>${isInterviewer == 'true' ? 'Please be at the location 10 minutes before the scheduled time.' : 'Please arrive 10 minutes before the scheduled time at the specified location.'}</p>
+    </div>
+    ' : ''}
+</div>
+<div class="footer">
+    <p>${isInterviewer == 'true' ? 'If you need to reschedule, please contact the recruitment team.' : 'If you need to reschedule, please contact your recruiter.'}</p>
+    <p>© 2025 EOP. All rights reserved.</p>
+    <p>This is an automated email, please do not reply.</p>
+</div>
+</body>
+</html>

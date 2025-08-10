@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Interview Cancelled</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .logo {
+      max-width: 150px;
+      height: auto;
+    }
+    .content {
+      background-color: #f9f9f9;
+      padding: 20px;
+      border-radius: 5px;
+    }
+    .title {
+      color: #0c587d;
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+    .details {
+      margin: 20px 0;
+    }
+    .detail-row {
+      margin-bottom: 10px;
+    }
+    .detail-label {
+      font-weight: bold;
+      display: inline-block;
+      width: 120px;
+    }
+    .action-button {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #0c587d;
+      color: white !important;
+      text-decoration: none;
+      border-radius: 4px;
+      margin-top: 15px;
+    }
+    .footer {
+      margin-top: 30px;
+      font-size: 12px;
+      text-align: center;
+      color: #777;
+    }
+    .meeting-link {
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+<div class="header">
+  <img src="cid:logo" alt="Company Logo" class="logo">
+  <h2>Interview Cancellation Notification</h2>
+</div>
+<div class="content">
+  <div class="title">For: ${jobTitle}</div>
+
+  <div class="details">
+    <div class="detail-row">
+      <span class="detail-label">${otherPartyLabel}</span>
+      <span>${otherParty}</span>
+    </div>
+
+    <div class="detail-row">
+      <span class="detail-label">Originally Scheduled:</span>
+      <span>${scheduledDate} at ${scheduledTime}</span>
+    </div>
+
+    <div class="detail-row">
+      <span class="detail-label">Cancellation Reason:</span>
+      <span>${cancellationReason}</span>
+    </div>
+  </div>
+
+  <div class="next-steps">
+    <h4>Next Steps</h4>
+    <p>${isInterviewer == 'true' ?
+      'The candidate has been notified. Please contact the recruitment team if you need to reschedule.' :
+      'We apologize for any inconvenience. Our team will contact you shortly to discuss next steps.'}
+    </p>
+  </div>
+
+  <div class="footer">
+    <p>© 2025 EOP. All rights reserved.</p>
+  </div>
+</div>
+</body>
+</html>

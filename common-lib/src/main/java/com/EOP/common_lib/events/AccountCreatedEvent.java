@@ -1,4 +1,4 @@
-package events;
+package com.EOP.common_lib.events;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,3 +15,4 @@ public class AccountCreatedEvent {
     private String password;
     private String verificationToken;
 }
+

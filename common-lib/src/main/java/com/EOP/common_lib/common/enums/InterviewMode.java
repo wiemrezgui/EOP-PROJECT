@@ -1,4 +1,4 @@
-package com.EOP.interview_service.enums;
+package com.EOP.common_lib.common.enums;
 
 public enum InterviewMode {
     ONLINE,IN_PERSON;

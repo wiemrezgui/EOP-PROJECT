@@ -139,6 +139,14 @@ public class JobController {
         Page<Job> result = jobService.getFilteredJobs(filters, PageRequest.of(page, size));
         return ResponseEntity.ok(ApiResponse.success(result, "Jobs filtered successfully"));
     }
-
+    @Operation(summary = "Get job title by id")
+    @RequireDepartmentPermission(service = "jobs", action = "read")
+    @PostMapping("/title/{id}")
+    public String getJobTitle(
+            @RequestBody Long id,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "15") int size) {
+        return jobService.getJobTitleById(id);
+    }
 
 }

@@ -1,6 +1,7 @@
 package com.EOP.jobs_service.services;
 
 import com.EOP.common_lib.common.exceptions.ResourceNotFoundException;
+import com.EOP.common_lib.events.JobApplicationEvent;
 import com.EOP.jobs_service.DTOs.CandidateApplicationDto;
 import com.EOP.jobs_service.DTOs.CandidateFilterDTO;
 import com.EOP.jobs_service.DTOs.CandidateResponse;
@@ -13,7 +14,6 @@ import com.EOP.jobs_service.models.JobApplication;
 import com.EOP.jobs_service.repositories.CandidateRepository;
 import com.EOP.jobs_service.repositories.JobApplicationRepository;
 import com.EOP.jobs_service.repositories.JobRepository;
-import events.JobApplicationEvent;
 import org.springframework.core.io.Resource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

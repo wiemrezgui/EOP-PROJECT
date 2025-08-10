@@ -1,6 +1,5 @@
 package com.EOP.interview_service.DTOs;
 
-import com.EOP.interview_service.enums.InterviewMode;
 import com.EOP.interview_service.enums.InterviewStatus;
 import com.EOP.interview_service.enums.TimeRange;
 import lombok.Getter;

@@ -1,6 +1,6 @@
 package com.EOP.interview_service.repositories;
 
-import com.EOP.interview_service.enums.InterviewMode;
+import com.EOP.common_lib.common.enums.InterviewMode;
 import com.EOP.interview_service.enums.InterviewStatus;
 import com.EOP.interview_service.models.Interview;
 import org.springframework.data.domain.Page;

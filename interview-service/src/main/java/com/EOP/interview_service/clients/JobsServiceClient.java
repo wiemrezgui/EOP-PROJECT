@@ -24,4 +24,6 @@ public interface JobsServiceClient {
     );
     @GetMapping("/api/jobs/candidates/get-email-by-id/{id}")
     String getCandidateEmailById(@PathVariable Long id);
+    @GetMapping("/api/jobs/title/{id}")
+    String getJobTitleById(@PathVariable Long id);
 }

@@ -1,4 +1,4 @@
-package events;
+package com.EOP.common_lib.events;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -11,8 +11,7 @@ import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor @Getter
-@Setter
+@AllArgsConstructor @Getter @Setter
 public class JobApplicationEvent {
     private String candidateEmail;
     private Long jobId;

@@ -1,6 +1,6 @@
 package com.EOP.interview_service.models;
 
-import com.EOP.interview_service.enums.InterviewMode;
+import com.EOP.common_lib.common.enums.InterviewMode;
 import com.EOP.interview_service.enums.InterviewStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -47,7 +47,7 @@ public class Interview {
     @Enumerated(EnumType.STRING)
     private InterviewStatus status;
 
-    private Integer durationMinutes = 15;
+    private Integer durationMinutes;
     @Email
     private String userEmail;
     private Long candidateID;

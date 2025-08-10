@@ -1,6 +1,6 @@
 package com.EOP.interview_service.DTOs;
 
-import com.EOP.interview_service.enums.InterviewMode;
+import com.EOP.common_lib.common.enums.InterviewMode;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;

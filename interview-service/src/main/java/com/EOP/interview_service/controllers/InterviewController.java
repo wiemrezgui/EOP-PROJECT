@@ -1,10 +1,10 @@
 package com.EOP.interview_service.controllers;
 
 import com.EOP.common_lib.common.DTO.ApiResponse;
+import com.EOP.common_lib.common.enums.InterviewMode;
 import com.EOP.interview_service.DTOs.CreateInterviewRequestDTO;
 import com.EOP.interview_service.DTOs.InterviewFilterDTO;
 import com.EOP.interview_service.DTOs.InterviewRequestDTO;
-import com.EOP.interview_service.enums.InterviewMode;
 import com.EOP.interview_service.enums.InterviewStatus;
 import com.EOP.interview_service.models.Interview;
 import com.EOP.interview_service.services.InterviewService;
@@ -232,17 +232,18 @@ public class InterviewController {
 
     @Operation(summary = "Delete interview", description = "Delete an interview by ID")
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> deleteInterview(
+    public ResponseEntity<ApiResponse<Void>> cancelInterview(
             @Parameter(description = "Interview ID", example = "1")
-            @PathVariable Long id) {
+            @PathVariable Long id ,
+            @RequestParam(required = false) String cancellationReason ) {
 
         log.info("Deleting interview with ID: {}", id);
 
-        interviewService.deleteInterview(id);
+        interviewService.cancelInterview(id,cancellationReason);
 
         ApiResponse<Void> apiResponse = ApiResponse.success(
                 null,
-                "Interview deleted successfully"
+                "Interview cancelled successfully"
         );
         return ResponseEntity.ok(apiResponse);
     }

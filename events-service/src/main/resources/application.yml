@@ -12,3 +12,5 @@ spring:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
       from: noreply@eop.com
+server:
+  port: 9091
