@@ -3,12 +3,13 @@ package com.EOP.common_lib.events;
 import com.EOP.common_lib.common.enums.InterviewMode;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-@Getter @Setter @AllArgsConstructor
+@Getter @Setter @AllArgsConstructor @NoArgsConstructor
 public class InterviewCreatedEvent {
     private String userEmail;
     private String jobTitle;

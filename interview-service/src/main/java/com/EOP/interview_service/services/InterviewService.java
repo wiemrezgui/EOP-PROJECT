@@ -63,6 +63,7 @@ public class InterviewService {
         interview.setScheduledTime(request.getScheduledTime());
         interview.setDescription(request.getDescription());
         interview.setStatus(InterviewStatus.SCHEDULED);
+        interview.setDurationMinutes(request.getDurationMinutes());
         interview.setCandidateID(request.getCandidateID());
         interview.setJobID(request.getJobID());
         interview.setUserEmail(request.getUserEmail());
@@ -82,9 +83,8 @@ public class InterviewService {
     private void sendInterviewCreatedEvent(Interview interview) {
         try {
             log.info("Starting to send interview event ");
-
-            String jobTitle=this.getJobTitle(interview.getJobID());
             String candidateEmail=this.jobsClient.getCandidateEmailById(interview.getCandidateID());
+            String jobTitle=this.jobsClient.getJobTitleById(interview.getJobID());
             InterviewCreatedEvent event = new InterviewCreatedEvent(
                     interview.getUserEmail(),
                     jobTitle,
@@ -360,8 +360,5 @@ public class InterviewService {
             throw new ResourceNotFoundException("No interviews found");
         }
         return interviews;
-    }
-    public String getJobTitle(Long id) {
-        return  this.jobsClient.getJobTitleById(id);
     }
 }

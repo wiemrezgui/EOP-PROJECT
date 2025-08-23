@@ -183,7 +183,7 @@ public class InterviewController {
             @Parameter(description = "Interview ID", example = "1")
             @PathVariable Long id,
 
-            @RequestBody @Valid InterviewRequestDTO request) {
+            @RequestBody @Valid InterviewRequestDTO request) throws ServiceUnavailableException {
 
         log.info("Updating interview with ID: {}", id);
 

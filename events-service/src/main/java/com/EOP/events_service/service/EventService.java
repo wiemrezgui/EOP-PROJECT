@@ -174,7 +174,16 @@ public class EventService {
         variables.put("scheduledTime", event.getInterviewTime().format(DateTimeFormatter.ofPattern("h:mm a")));
         variables.put("duration", String.valueOf(event.getDurationMinutes()));
         variables.put("mode", event.getMode().toString());
-        variables.put("description", event.getDescription());
+        variables.put("description", event.getDescription() != null ? event.getDescription() : "");
+
+        variables.put("emailTitle", isInterviewer ? "Interview Scheduled" : "Your Interview Scheduled");
+        variables.put("onlineInstructions", isInterviewer ?
+                "The candidate will join using the link above." :
+                "Please join using the link above at the scheduled time.");
+        variables.put("buttonText", isInterviewer ? "Start Meeting" : "Join Meeting");
+        variables.put("rescheduleInstructions", isInterviewer ?
+                "If you need to reschedule, please contact the recruitment team." :
+                "If you need to reschedule, please contact your recruiter.");
 
         // Role-specific variables
         variables.put("isInterviewer", String.valueOf(isInterviewer));
@@ -186,10 +195,11 @@ public class EventService {
             variables.put("location", "Online Meeting");
         } else {
             variables.put("location", event.getLocation());
-            variables.put("meetingLink", "");
+            variables.put("meetingLink", "#"); // Empty link for safety
         }
 
-        String finalContent = replaceVariables(htmlContent, variables);
+        // processor that handles conditionals
+        String finalContent = processTemplateWithConditionals(htmlContent, variables);
         helper.setText(finalContent, true);
 
         ClassPathResource logo = new ClassPathResource("images/EOP-logo.png");
@@ -291,6 +301,22 @@ public class EventService {
         for (Map.Entry<String, String> entry : variables.entrySet()) {
             result = result.replace("${" + entry.getKey() + "}", entry.getValue());
         }
+        return result;
+    }
+    private String processTemplateWithConditionals(String template, Map<String, String> variables) {
+        String result = template;
+
+        // First, replace all simple variables
+        for (Map.Entry<String, String> entry : variables.entrySet()) {
+            result = result.replace("${" + entry.getKey() + "}", entry.getValue());
+        }
+
+        // Process conditionals - remove the JavaScript syntax but keep the content
+        result = result.replace("${mode == 'ONLINE' ? '", "");
+        result = result.replace("' : ''}", "");
+        result = result.replace("${description ? '", "");
+        result = result.replace("${isInterviewer == 'true' ? '", "");
+
         return result;
     }
 }

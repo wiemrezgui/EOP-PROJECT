@@ -5,6 +5,7 @@ import feign.RequestInterceptor;
 import io.jsonwebtoken.Jwt;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.core.Authentication;
@@ -14,6 +15,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 @Configuration
 @RequiredArgsConstructor
+@Slf4j
 public class FeignClientConfig {
 
     private final JwtTokenProvider tokenProvider;
@@ -21,18 +23,22 @@ public class FeignClientConfig {
     @Bean
     public RequestInterceptor requestInterceptor() {
         return requestTemplate -> {
-            Authentication authentication = SecurityContextHolder.getContext()
-                    .getAuthentication();
+            log.debug("Feign interceptor called for URL: {}", requestTemplate.url());
 
-            if (authentication != null) {
-                // Get token from HTTP headers directly
-                HttpServletRequest request = ((ServletRequestAttributes)
-                        RequestContextHolder.currentRequestAttributes()).getRequest();
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            log.debug("Authentication in context: {}", authentication);
 
-                String token = request.getHeader("Authorization");
-                if (token != null) {
-                    requestTemplate.header("Authorization", token);
-                }
+            HttpServletRequest request = ((ServletRequestAttributes)
+                    RequestContextHolder.currentRequestAttributes()).getRequest();
+
+            String token = request.getHeader("Authorization");
+            log.debug("Authorization header from request: {}", token);
+
+            if (token != null) {
+                requestTemplate.header("Authorization", token);
+                log.debug("Authorization header added to Feign request");
+            } else {
+                log.warn("No Authorization header found for Feign request to: {}", requestTemplate.url());
             }
         };
     }

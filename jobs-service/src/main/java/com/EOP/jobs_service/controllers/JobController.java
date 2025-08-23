@@ -141,11 +141,9 @@ public class JobController {
     }
     @Operation(summary = "Get job title by id")
     @RequireDepartmentPermission(service = "jobs", action = "read")
-    @PostMapping("/title/{id}")
+    @GetMapping("/title/{id}")
     public String getJobTitle(
-            @RequestBody Long id,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "15") int size) {
+            @PathVariable Long id) {
         return jobService.getJobTitleById(id);
     }
 
