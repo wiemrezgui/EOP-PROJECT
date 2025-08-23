@@ -288,7 +288,11 @@ public class EventService {
         vars.put("scheduledTime", event.getScheduledTime().format(DateTimeFormatter.ofPattern("h:mm a")));
         vars.put("cancellationReason", event.getCancellationReason() != null ?
                 event.getCancellationReason() : "No reason provided");
+        String nextSteps = isInterviewer ?
+                "The candidate has been notified. Please contact the recruitment team if you need to reschedule." :
+                "We apologize for any inconvenience. Our team will contact you shortly to discuss next steps.";
 
+        vars.put("nextSteps", nextSteps);
         return vars;
     }
     private String loadTemplate(String path) throws IOException {
@@ -311,7 +315,7 @@ public class EventService {
             result = result.replace("${" + entry.getKey() + "}", entry.getValue());
         }
 
-        // Process conditionals - remove the JavaScript syntax but keep the content
+        // Process conditionals
         result = result.replace("${mode == 'ONLINE' ? '", "");
         result = result.replace("' : ''}", "");
         result = result.replace("${description ? '", "");

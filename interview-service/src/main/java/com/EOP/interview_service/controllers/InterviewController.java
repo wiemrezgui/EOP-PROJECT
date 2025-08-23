@@ -230,7 +230,7 @@ public class InterviewController {
         return ResponseEntity.ok(apiResponse);
     }
 
-    @Operation(summary = "Delete interview", description = "Delete an interview by ID")
+    @Operation(summary = "Cancel an interview", description = "Cancel an interview by ID")
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> cancelInterview(
             @Parameter(description = "Interview ID", example = "1")
