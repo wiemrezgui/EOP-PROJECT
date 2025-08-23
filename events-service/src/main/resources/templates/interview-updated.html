@@ -68,7 +68,7 @@
   <h2>Interview Update Notification</h2>
 </div>
 <div class="content">
-  <div class="title">For: ${jobTitle}</div>
+  <div class="title">For job position : ${jobTitle}</div>
 
   <div class="details">
     <div class="detail-row">
@@ -76,52 +76,24 @@
       <span>${otherParty}</span>
     </div>
 
-    ${timeChanged == 'true' ? '
-    <div class="detail-row">
-      <span class="detail-label">Previous Time:</span>
-      <span>${previousDate} at ${previousTime}</span>
-    </div>
-    ' : ''}
+    ${previousTimeSection}
 
     <div class="detail-row">
-      <span class="detail-label">${timeChanged == 'true' ? 'New Time:' : 'Time:'}</span>
+      <span class="detail-label">${timeLabel}</span>
       <span>${newDate} at ${newTime}</span>
     </div>
 
-    ${modeChanged == 'true' ? '
-    <div class="detail-row">
-      <span class="detail-label">New Mode:</span>
-      <span>${mode}</span>
-    </div>
-    ' : ''}
+    ${modeChangeSection}
 
-    ${mode == 'ONLINE' ? '
-    <div class="detail-row">
-      <span class="detail-label">Meeting Link:</span>
-      <span class="meeting-link">
-                <a href="${meetingLink}">${meetingLink}</a>
-            </span>
-    </div>
-    ' : ''}
+    ${meetingLinkSection}
 
-    ${mode == 'IN_PERSON' ? '
-    <div class="detail-row">
-      <span class="detail-label">Location:</span>
-      <span>${location}</span>
-    </div>
-    ' : ''}
+    ${locationSection}
 
-    ${description ? '
-    <div class="detail-row">
-      <span class="detail-label">Details:</span>
-      <span>${description}</span>
-    </div>
-    ' : ''}
+    ${descriptionSection}
   </div>
 
   <div class="footer">
-    <p>If you have any questions, please contact ${isInterviewer == 'true' ?
-      'the recruitment team' : 'your recruiter'}.</p>
+    <p>If you have any questions, please contact ${contactPerson}.</p>
     <p>© 2025 EOP. All rights reserved.</p>
   </div>
 </div>

@@ -30,9 +30,13 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.naming.ServiceUnavailableException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.chrono.ChronoLocalDate;
 import java.util.List;
+import java.util.Objects;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -200,37 +204,40 @@ public class InterviewService {
     @Transactional
     public Interview updateInterview(Long id, InterviewRequestDTO request) throws ServiceUnavailableException {
         Interview interview = getInterviewById(id);
-        // Track changes for notification
-        boolean timeChanged = !interview.getScheduledDate().equals(request.getScheduledDate()) ||
-                !interview.getScheduledTime().equals(request.getScheduledTime());
-        boolean modeChanged = interview.getMode() != request.getMode();
-        boolean locationChanged = !interview.getLocation().equals(request.getLocation());
-        interview.setScheduledDate(request.getScheduledDate());
+        LocalDate oldDate = interview.getScheduledDate();
+        LocalTime oldTime = interview.getScheduledTime();
+        InterviewMode oldMode = interview.getMode();
+        String oldLocation = interview.getLocation();
+
+        boolean timeChanged = !oldDate.equals(request.getScheduledDate()) ||
+                !oldTime.equals(request.getScheduledTime());
+        boolean modeChanged = oldMode != request.getMode();
+        boolean locationChanged = !Objects.equals(oldLocation, request.getLocation());    interview.setScheduledDate(request.getScheduledDate());
         interview.setScheduledTime(request.getScheduledTime());
         interview.setMode(request.getMode());
         if (request.getMode() == InterviewMode.ONLINE) {
+            interview.setDurationMinutes(request.getDurationMinutes());
             handleOnlineInterview(interview);
         } else { // PRESENTIAL
             interview.setLocation(request.getLocation());
-            interview.setMeetingLink(null); // Clear link if exists
+            interview.setMeetingLink(null);
         }
         interview.setDurationMinutes(request.getDurationMinutes());
         interview.setDescription(request.getDescription());
         Interview updatedInterview = interviewRepository.save(interview);
-        sendInterviewUpdatedEvent(updatedInterview, timeChanged, modeChanged,locationChanged);
+        sendInterviewUpdatedEvent(updatedInterview, oldDate, oldTime, timeChanged, modeChanged,locationChanged);
         return updatedInterview;
     }
-    private void sendInterviewUpdatedEvent(Interview interview, boolean timeChanged, boolean modeChanged,boolean locationChanged) {
+    private void sendInterviewUpdatedEvent(Interview interview,LocalDate oldDate, LocalTime oldTime, boolean timeChanged, boolean modeChanged,boolean locationChanged) {
         try {
             String jobTitle = jobsClient.getJobTitleById(interview.getJobID());
             String candidateEmail = jobsClient.getCandidateEmailById(interview.getCandidateID());
-
             InterviewUpdatedEvent event = InterviewUpdatedEvent.builder()
                     .interviewerEmail(interview.getUserEmail())
                     .candidateEmail(candidateEmail)
                     .jobTitle(jobTitle)
-                    .previousDate(interview.getScheduledDate())
-                    .previousTime(interview.getScheduledTime())
+                    .previousDate(oldDate)
+                    .previousTime(oldTime)
                     .newDate(interview.getScheduledDate())
                     .newTime(interview.getScheduledTime())
                     .mode(interview.getMode())
@@ -241,7 +248,10 @@ public class InterviewService {
                     .modeChanged(modeChanged)
                     .locationChanged(locationChanged)
                     .build();
-
+            log.info("previous date {}", event.getPreviousDate());
+            log.info("previous time {}", event.getPreviousTime());
+            log.info("new date {}", event.getNewDate());
+            log.info("new time {}", event.getNewTime());
             kafkaTemplate.send("interview-updated", event);
             log.info("Sent interview updated event for interview ID: {}", interview.getId());
         } catch (Exception e) {

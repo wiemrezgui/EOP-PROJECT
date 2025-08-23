@@ -113,7 +113,10 @@ public class EventService {
     @KafkaListener(topics = "interview-updated")
     public void handleInterviewUpdated(InterviewUpdatedEvent event) throws IOException, jakarta.mail.MessagingException {
         log.info("Processing interview update");
-
+        log.info("previous date {}", event.getPreviousDate());
+        log.info("previous time {}", event.getPreviousTime());
+        log.info("new date {}", event.getNewDate());
+        log.info("new time {}", event.getNewTime());
         // Send to candidate
         sendInterviewUpdateEmail(
                 event.getCandidateEmail(),
@@ -199,7 +202,7 @@ public class EventService {
         }
 
         // processor that handles conditionals
-        String finalContent = processTemplateWithConditionals(htmlContent, variables);
+        String finalContent = processInterviewScheduleTemplateWithConditionals(htmlContent, variables);
         helper.setText(finalContent, true);
 
         ClassPathResource logo = new ClassPathResource("images/EOP-logo.png");
@@ -220,6 +223,7 @@ public class EventService {
 
         String htmlContent = loadTemplate("templates/interview-updated.html");
         Map<String, String> variables = createUpdateEmailVariables(event, isInterviewer);
+
         String finalContent = replaceVariables(htmlContent, variables);
 
         helper.setText(finalContent, true);
@@ -254,23 +258,88 @@ public class EventService {
 
     private Map<String, String> createUpdateEmailVariables(InterviewUpdatedEvent event, boolean isInterviewer) {
         Map<String, String> vars = new HashMap<>();
-        // Common variables
-        vars.put("jobTitle", event.getJobTitle());
-        vars.put("isInterviewer", String.valueOf(isInterviewer));
-        vars.put("otherParty", isInterviewer ? event.getCandidateEmail() : event.getInterviewerEmail());
+        // Basic variables
+        vars.put("jobTitle", event.getJobTitle() != null ? event.getJobTitle() : "");
+        vars.put("otherParty", isInterviewer ?
+                (event.getCandidateEmail() != null ? event.getCandidateEmail() : "") :
+                (event.getInterviewerEmail() != null ? event.getInterviewerEmail() : ""));
         vars.put("otherPartyLabel", isInterviewer ? "Candidate:" : "Interviewer:");
+        vars.put("newDate", event.getNewDate() != null ?
+                event.getNewDate().format(DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy")) : "");
+        vars.put("newTime", event.getNewTime() != null ?
+                event.getNewTime().format(DateTimeFormatter.ofPattern("h:mm a")) : "");
+        vars.put("mode", event.getMode() != null ? event.getMode().toString() : "");
+        vars.put("location", event.getLocation() != null ? event.getLocation() : "");
+        vars.put("meetingLink", event.getMeetingLink() != null ? event.getMeetingLink() : "");
+        vars.put("description", event.getDescription() != null ? event.getDescription() : "");
+        vars.put("contactPerson", isInterviewer ? "the recruitment team" : "your recruiter");
 
-        // Update-specific variables
-        vars.put("previousDate", event.getPreviousDate().format(DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy")));
-        vars.put("previousTime", event.getPreviousTime().format(DateTimeFormatter.ofPattern("h:mm a")));
-        vars.put("newDate", event.getNewDate().format(DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy")));
-        vars.put("newTime", event.getNewTime().format(DateTimeFormatter.ofPattern("h:mm a")));
-        vars.put("timeChanged", String.valueOf(event.isTimeChanged()));
-        vars.put("modeChanged", String.valueOf(event.isModeChanged()));
-        vars.put("mode", event.getMode().toString());
-        vars.put("location", event.getLocation());
-        vars.put("meetingLink", event.getMeetingLink());
-        vars.put("description", event.getDescription());
+        // Conditional sections - built in Java
+        boolean timeChanged = event.isTimeChanged();
+        boolean modeChanged = event.isModeChanged();
+        String mode = event.getMode() != null ? event.getMode().toString() : "";
+
+        // Previous time section (only show if time changed)
+        if (timeChanged && event.getPreviousDate() != null && event.getPreviousTime() != null) {
+            String previousDate = event.getPreviousDate().format(DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy"));
+            String previousTime = event.getPreviousTime().format(DateTimeFormatter.ofPattern("h:mm a"));
+            vars.put("previousTimeSection",
+                    "<div class='detail-row'>" +
+                            "<span class='detail-label'>Previous Time:</span>" +
+                            "<span>" + previousDate + " at " + previousTime + "</span>" +
+                            "</div>");
+        } else {
+            vars.put("previousTimeSection", "");
+        }
+
+        // Time label (changes based on whether time was updated)
+        vars.put("timeLabel", timeChanged ? "New Time:" : "Time:");
+
+        // Mode change section (only show if mode changed)
+        if (modeChanged) {
+            vars.put("modeChangeSection",
+                    "<div class='detail-row'>" +
+                            "<span class='detail-label'>New Mode:</span>" +
+                            "<span>" + mode + "</span>" +
+                            "</div>");
+        } else {
+            vars.put("modeChangeSection", "");
+        }
+
+        // Meeting link section (only for online mode)
+        if ("ONLINE".equals(mode) && event.getMeetingLink() != null) {
+            vars.put("meetingLinkSection",
+                    "<div class='detail-row'>" +
+                            "<span class='detail-label'>Meeting Link:</span>" +
+                            "<span class='meeting-link'>" +
+                            "<a href='" + event.getMeetingLink() + "'>" + event.getMeetingLink() + "</a>" +
+                            "</span>" +
+                            "</div>");
+        } else {
+            vars.put("meetingLinkSection", "");
+        }
+
+        // Location section (only for in-person mode)
+        if ("IN_PERSON".equals(mode) && event.getLocation() != null) {
+            vars.put("locationSection",
+                    "<div class='detail-row'>" +
+                            "<span class='detail-label'>Location:</span>" +
+                            "<span>" + event.getLocation() + "</span>" +
+                            "</div>");
+        } else {
+            vars.put("locationSection", "");
+        }
+
+        // Description section (only if description exists)
+        if (event.getDescription() != null && !event.getDescription().trim().isEmpty()) {
+            vars.put("descriptionSection",
+                    "<div class='detail-row'>" +
+                            "<span class='detail-label'>Details:</span>" +
+                            "<span>" + event.getDescription() + "</span>" +
+                            "</div>");
+        } else {
+            vars.put("descriptionSection", "");
+        }
 
         return vars;
     }
@@ -303,11 +372,14 @@ public class EventService {
     private String replaceVariables(String template, Map<String, String> variables) {
         String result = template;
         for (Map.Entry<String, String> entry : variables.entrySet()) {
-            result = result.replace("${" + entry.getKey() + "}", entry.getValue());
+            String value = entry.getValue();
+            // Handle null values by replacing with empty string
+            String replacement = value != null ? value : "";
+            result = result.replace("${" + entry.getKey() + "}", replacement);
         }
         return result;
     }
-    private String processTemplateWithConditionals(String template, Map<String, String> variables) {
+    private String processInterviewScheduleTemplateWithConditionals(String template, Map<String, String> variables) {
         String result = template;
 
         // First, replace all simple variables
@@ -323,5 +395,6 @@ public class EventService {
 
         return result;
     }
+
 }
 
