@@ -2,7 +2,7 @@ package com.EOP.auth_service.controller;
 
 import com.EOP.auth_service.DTOs.UserDTO;
 import com.EOP.auth_service.DTOs.UserResponseDTO;
-import com.EOP.auth_service.service.UserAuthService;
+import com.EOP.auth_service.service.UserService;
 import com.EOP.common_lib.common.DTO.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "User", description = "Users apis")
 @AllArgsConstructor
 public class UserController {
-    private final UserAuthService userAuthService;
+    private final UserService userService;
 
     @Operation(summary = "Add user by admin")
     @PostMapping("/add-user")
@@ -31,7 +31,7 @@ public class UserController {
 
         log.info("Creating new user account for email: {}", data.getEmail());
 
-        UserResponseDTO userResponse = userAuthService.addUser(data);
+        UserResponseDTO userResponse = userService.addUser(data);
         ApiResponse<UserResponseDTO> response = ApiResponse.success(
                 userResponse,
                 "Account created successfully. Please check your email to verify your account."
@@ -46,7 +46,7 @@ public class UserController {
 
         log.info("Verifying account for email: {}", email);
 
-        userAuthService.verifyAccount(email);
+        userService.verifyAccount(email);
         ApiResponse<String> response = ApiResponse.success(
                 null,
                 "Account verified successfully"
@@ -58,6 +58,6 @@ public class UserController {
     @GetMapping("/check-user/{userEmail}")
     public Boolean checkUser(
             @PathVariable String userEmail) {
-        return this.userAuthService.checkUserExists(userEmail);
+        return this.userService.checkUserExists(userEmail);
     }
 }
